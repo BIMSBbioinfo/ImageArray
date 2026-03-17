@@ -26,6 +26,7 @@ Imports:
   rhdf5,
   HDF5Array,
   Rarr,
+  ZarrArray,
   magick,
   tools
 Suggests: 
