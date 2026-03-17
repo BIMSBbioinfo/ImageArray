@@ -509,7 +509,7 @@ createImageArray <- function(
 #' \link[ImageArray]{createImageArray}.
 #'
 #' @importFrom HDF5Array writeHDF5Array
-#' @importFrom Rarr writeZarrArray
+#' @importFrom ZarrArray writeZarrArray
 #' @importFrom rhdf5 h5createFile h5createGroup
 #' @importFrom tools file_ext
 #' @import DelayedArray
@@ -636,10 +636,10 @@ writeImageArray <- function(
         chunk_dim["x"] <- min(chunk_dim["x"], 2000)
         chunk_dim["y"] <- min(chunk_dim["y"], 2000)
         image_list[[i]] <-
-          Rarr::writeZarrArray(
+          ZarrArray::writeZarrArray(
             img,
-            zarr_array_path = file.path(output, paste0(name, "/", i)),
-            chunk_dim = chunk_dim
+            zarr_path = file.path(output, paste0(name, "/", i)),
+            chunkdim = chunk_dim
           )
       },
       "in-memory" = {
