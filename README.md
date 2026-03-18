@@ -32,8 +32,8 @@ BiocManager::install("ImageArray")
 
 ## Getting started
 
-**ImageArray** allows saving images to either HDF5 (HDF5ImageArray) or 
-Zarr (ZarrImageArray) where you can define the number of layers of the 
+**ImageArray** allows saving images to either HDF5 or 
+Zarr where you can define the number of layers of the 
 pyramids (i.e. number of downscaled images) and the path to the on-disk h5
 file or zarr store. 
 
@@ -47,7 +47,7 @@ img = readImage(img_file)
 dir.create(td <- tempfile())
 h5_sample <- file.path(td, "sample")
 imgarray <- writeImageArray(img, 
-                            format = "HDF5ImageArray", 
+                            format = "h5", 
                             output = h5_sample, 
                             nlevels = 2)
 imgarray
@@ -61,7 +61,7 @@ Scales (2): (768,512) (384,256)
 Each level of a pyramid can be rasterized at any time, and thus plotted.
 
 ```r
-imgraster <- as.raster(imgarray, level = 2))
+imgraster <- as.raster(imgarray, level = 2)
 plot(imgraster)
 ```
 
