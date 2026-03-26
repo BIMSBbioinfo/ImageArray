@@ -154,10 +154,13 @@ setMethod(
       ),
       "\n"
     )
-    scales <- vapply(
-      object@levels,
-      \(x) sprintf("(%s)", paste0(dim(x), collapse = ",")),
-      character(1)
+    scales <- sprintf(
+      "(%s)",
+      vapply(
+        object@levels,
+        \(x) paste(dim(x), collapse = ","),
+        character(1)
+      )
     )
     S4Vectors::coolcat("Scales (%d): %s", scales)
   }
