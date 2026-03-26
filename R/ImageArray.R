@@ -638,7 +638,7 @@ writeImageArray <- function(
         image_list[[i]] <-
           ZarrArray::writeZarrArray(
             img,
-            zarr_path = file.path(output, paste0(name, "/", i)),
+            zarr_path = file.path(output, name, i),
             chunkdim = chunk_dim
           )
       },
