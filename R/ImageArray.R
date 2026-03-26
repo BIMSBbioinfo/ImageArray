@@ -577,14 +577,9 @@ writeImageArray <- function(
     if (!format %in% .FORMATS) {
       stop(
         sprintf(
-          paste0(
-            "Invalid format: %s. Currently supported formats are %s."
-          ),
+          "Invalid format: %s. Currently supported formats are %s.",
           format,
-          paste(
-            vapply(.FORMATS, \(.) paste0('"', ., '"'), character(1)),
-            collapse = ", "
-          )
+          toString(sprintf('"%s"', .FORMATS))
         )
       )
     }
