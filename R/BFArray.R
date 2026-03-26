@@ -37,7 +37,7 @@ BFArray <- function(image.file, series, resolution) {
     filter.metadata = TRUE,
     proprietary.metadata = TRUE
   )
-  len_meta <- vapply(meta.data@.Data, length, integer(1))
+  len_meta <- lengths(meta.data@.Data)
   meta.data@.Data <- meta.data@.Data[which(len_meta > 0)]
 
   # get shape
@@ -142,7 +142,7 @@ setMethod("type", "BFArraySeed", function(x) x@type)
   )
 
   # get slices
-  len_ind <- vapply(ind, length, length(ind))
+  len_ind <- lengths(ind)
   if (any(len_ind == 0)) {
     res <- array(dim = len_ind)
     type(res) <- x@type
