@@ -41,8 +41,7 @@ setMethod("rotate", signature = "ImageArray", function(x, angle) {
 #' @describeIn ImageArray-methods permute image
 #' @exportMethod aperm
 setMethod("aperm", signature = "ImageArray", function(a, perm) {
-  n.levels <- length(a@levels)
-  for (i in seq_len(n.levels)) {
+  for (i in seq_along(a@levels)) {
     a[[i]] <- aperm(a[[i]], perm = perm)
   }
   a
@@ -51,8 +50,7 @@ setMethod("aperm", signature = "ImageArray", function(a, perm) {
 #' @describeIn ImageArray-methods negate image
 #' @exportMethod negate
 setMethod("negate", signature = "ImageArray", function(object) {
-  n.levels <- length(object@levels)
-  for (i in seq_len(n.levels)) {
+  for (i in seq_along(object@levels)) {
     object[[i]] <- 255L - object[[i]]
   }
   object
@@ -64,8 +62,7 @@ setMethod("modulate", signature = "ImageArray", function(object, brightness) {
   if (brightness < 0) {
     stop("Brightness should be more than 0, typically more than 100")
   }
-  n.levels <- length(object@levels)
-  for (i in seq_len(n.levels)) {
+  for (i in seq_along(object@levels)) {
     tmp <- ceiling(object[[i]] * (brightness / 100))
     max <- if (type(object[[i]]) == "double") 1 else 255
     tmp[tmp > max] <- max

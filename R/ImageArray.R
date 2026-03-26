@@ -612,7 +612,7 @@ writeImageArray <- function(
 
   # write all levels
   ax <- axes(image_list)
-  for (i in seq_len(length(image_list@levels))) {
+  for (i in seq_along(image_list@levels)) {
     img <- image_list[[i]]
 
     # write array
