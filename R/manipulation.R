@@ -17,7 +17,7 @@ setMethod("rotate", signature = "ImageArray", function(x, angle) {
   # array perm.
   if (angle %in% c(90, 270)) {
     cur_perm <- .swap(
-      seq_len(length(dim_img)),
+      seq_along(dim_img),
       which(ax == "x"),
       which(ax == "y")
     )
@@ -77,14 +77,13 @@ setMethod("modulate", signature = "ImageArray", function(object, brightness) {
 #' @importFrom stats setNames
 #' @noRd
 .flipflop <- function(object, direction = "x") {
-  n.levels <- length(object@levels)
   ax <- axes(object)
 
   # check dim
   .check_dim(object)
 
   # flip all
-  for (i in seq_len(n.levels)) {
+  for (i in seq_along(object@levels)) {
     img <- object[[i]]
     dim_img <- stats::setNames(dim(img), ax)
     cur_ind <- stats::setNames(lapply(dim_img, seq_len), ax)
@@ -134,13 +133,12 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
   }
 
   # crop all images
-  n.levels <- length(object@levels)
-  for (i in seq_len(n.levels)) {
+  for (i in seq_along(object@levels)) {
     img <- object[[i]]
     dim_img <- stats::setNames(dim(img), ax)[c("x", "y")]
     cur_ind <- index
     cur_ind[c("x", "y")] <-
-      lapply(seq_len(length(index[c("x", "y")])), function(j) {
+      lapply(seq_along(index[c("x", "y")]), function(j) {
         curind <- index[c("x", "y")][[j]]
         id <- c(
           floor(utils::head(curind, 1) / (2^(i - 1))),

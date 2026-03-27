@@ -30,9 +30,8 @@ setReplaceMethod(
   "path",
   signature = "ImageArray",
   function(object, value) {
-    n.levels <- length(object)
     # update all paths
-    for (i in seq_len(n.levels)) {
+    for (i in seq_along(object)) {
       object[[i]] <-
         modify_seeds(
           object[[i]],
@@ -210,8 +209,7 @@ is.sequential <- function(x) {
   if (i %% 1 != 0) {
     stop("Level should be an integer!")
   }
-  n.levels <- length(x)
-  if (i < 1 || n.levels < i) {
+  if (i < 1 || length(x) < i) {
     stop("Level is outside of range")
   }
 }
