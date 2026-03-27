@@ -154,10 +154,13 @@ setMethod(
       ),
       "\n"
     )
-    scales <- vapply(
-      object@levels,
-      \(x) sprintf("(%s)", paste0(dim(x), collapse = ",")),
-      character(1)
+    scales <- sprintf(
+      "(%s)",
+      vapply(
+        object@levels,
+        \(x) paste(dim(x), collapse = ","),
+        character(1)
+      )
     )
     S4Vectors::coolcat("Scales (%d): %s", scales)
   }
@@ -577,14 +580,9 @@ writeImageArray <- function(
     if (!format %in% .FORMATS) {
       stop(
         sprintf(
-          paste0(
-            "Invalid format: %s. Currently supported formats are %s."
-          ),
+          "Invalid format: %s. Currently supported formats are %s.",
           format,
-          paste(
-            vapply(.FORMATS, \(.) paste0('"', ., '"'), character(1)),
-            collapse = ", "
-          )
+          toString(sprintf('"%s"', .FORMATS))
         )
       )
     }
@@ -612,7 +610,7 @@ writeImageArray <- function(
 
   # write all levels
   ax <- axes(image_list)
-  for (i in seq_len(length(image_list@levels))) {
+  for (i in seq_along(image_list@levels)) {
     img <- image_list[[i]]
 
     # write array
@@ -638,7 +636,7 @@ writeImageArray <- function(
         image_list[[i]] <-
           ZarrArray::writeZarrArray(
             img,
-            zarr_path = file.path(output, paste0(name, "/", i)),
+            zarr_path = file.path(output, name, i),
             chunkdim = chunk_dim
           )
       },
