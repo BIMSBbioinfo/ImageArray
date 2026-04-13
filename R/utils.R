@@ -16,7 +16,7 @@ setMethod("path", signature = "ImageArray", function(object) {
 
   # check if path is a zarr path
   # the path could have a zarr extension with no associated zarr group/array
-  if (methods::is(obj, "_ZarrArray")) {
+  if (methods::is(obj, "ZarrArray")) {
     file_path <- normalizePath(dirname(file_path), winslash = "\\")
   }
 
@@ -41,7 +41,7 @@ setReplaceMethod(
             # this also requires normalizing the path to ensure correct
             # replacement on Windows
             file_path <- path(x)
-            if (methods::is(x, "_ZarrArraySeed")) {
+            if (methods::is(x, "ZarrArraySeed")) {
               value <- gsub(
                 normalizePath(dirname(file_path), winslash = "\\"),
                 value,
