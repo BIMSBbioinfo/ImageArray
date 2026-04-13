@@ -3,7 +3,6 @@ library(rhdf5)
 library(HDF5Array)
 library(Rarr)
 
-
 output_h5ad <- tempfile(fileext = ".h5")
 output_zarr <- tempfile(fileext = ".zarr")
 
