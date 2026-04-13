@@ -26,6 +26,7 @@ Imports:
   rhdf5,
   HDF5Array,
   Rarr,
+  ZarrArray,
   magick,
   tools
 Suggests: 
@@ -36,6 +37,8 @@ Suggests:
   RBioFormats,
   BiocFileCache,
   BiocStyle
+Remotes:
+  Bioconductor/ZarrArray
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/BIMSBbioinfo/ImageArray

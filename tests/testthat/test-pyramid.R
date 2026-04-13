@@ -76,7 +76,7 @@ test_that("visualize zarr ImageArray", {
     mat_image,
     output = output_zarr,
     name = "image",
-    format = "ZarrImageArray",
+    format = "zarr",
     replace = TRUE,
     verbose = FALSE
   )

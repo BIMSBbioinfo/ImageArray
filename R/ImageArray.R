@@ -154,10 +154,13 @@ setMethod(
       ),
       "\n"
     )
-    scales <- vapply(
-      object@levels,
-      \(x) sprintf("(%s)", paste0(dim(x), collapse = ",")),
-      character(1)
+    scales <- sprintf(
+      "(%s)",
+      vapply(
+        object@levels,
+        \(x) paste(dim(x), collapse = ","),
+        character(1)
+      )
     )
     S4Vectors::coolcat("Scales (%d): %s", scales)
   }
@@ -509,7 +512,7 @@ createImageArray <- function(
 #' \link[ImageArray]{createImageArray}.
 #'
 #' @importFrom HDF5Array writeHDF5Array
-#' @importFrom Rarr writeZarrArray
+#' @importFrom ZarrArray writeZarrArray
 #' @importFrom rhdf5 h5createFile h5createGroup
 #' @importFrom tools file_ext
 #' @import DelayedArray
@@ -577,14 +580,9 @@ writeImageArray <- function(
     if (!format %in% .FORMATS) {
       stop(
         sprintf(
-          paste0(
-            "Invalid format: %s. Currently supported formats are %s."
-          ),
+          "Invalid format: %s. Currently supported formats are %s.",
           format,
-          paste(
-            vapply(.FORMATS, \(.) paste0('"', ., '"'), character(1)),
-            collapse = ", "
-          )
+          toString(sprintf('"%s"', .FORMATS))
         )
       )
     }
@@ -612,7 +610,7 @@ writeImageArray <- function(
 
   # write all levels
   ax <- axes(image_list)
-  for (i in seq_len(length(image_list@levels))) {
+  for (i in seq_along(image_list@levels)) {
     img <- image_list[[i]]
 
     # write array
@@ -636,10 +634,10 @@ writeImageArray <- function(
         chunk_dim["x"] <- min(chunk_dim["x"], 2000)
         chunk_dim["y"] <- min(chunk_dim["y"], 2000)
         image_list[[i]] <-
-          Rarr::writeZarrArray(
+          ZarrArray::writeZarrArray(
             img,
-            zarr_array_path = file.path(output, paste0(name, "/", i)),
-            chunk_dim = chunk_dim
+            zarr_path = file.path(output, name, i),
+            chunkdim = chunk_dim
           )
       },
       "in-memory" = {

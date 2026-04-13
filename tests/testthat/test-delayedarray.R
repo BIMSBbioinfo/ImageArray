@@ -54,6 +54,8 @@ test_that("path zarr", {
 
   # change path
   output_zarr_replace <- gsub(".zarr", "2.zarr", path(mat_list))
+  system(paste('mkdir -p', 
+               output_zarr_replace))
   system(paste('mv', 
                path(mat_list),
                output_zarr_replace))

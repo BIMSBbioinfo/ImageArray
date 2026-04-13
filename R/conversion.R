@@ -39,8 +39,7 @@ setMethod(
       return(S4Arrays::as.array.Array(x[[1]]))
     } else if (!is.null(max.pixel.size)) {
       if (max.pixel.size %% 1 == 0) {
-        n.levels <- length(x@levels)
-        for (i in seq_len(n.levels)) {
+        for (i in seq_along(x@levels)) {
           dim_img <- stats::setNames(dim(x[[i]]), ax)
           if (max.pixel.size >= max(rev(dim_img)[c("x", "y")])) {
             return(S4Arrays::as.array.Array(x[[i]]))
@@ -127,7 +126,7 @@ as.raster.ImageArray <- function(
 ) {
   # get axes
   ax <- axes(x)
-  cur_perm <- stats::setNames(seq_len(length(dim(x))), ax)
+  cur_perm <- stats::setNames(seq_along(dim(x)), ax)
 
   # realize
   rx <- realize(

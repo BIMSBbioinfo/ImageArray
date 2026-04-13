@@ -16,7 +16,7 @@ setMethod("path", signature = "ImageArray", function(object) {
 
   # check if path is a zarr path
   # the path could have a zarr extension with no associated zarr group/array
-  if (methods::is(obj, "ZarrArray")) {
+  if (methods::is(obj, "_ZarrArray")) {
     file_path <- normalizePath(dirname(file_path), winslash = "\\")
   }
 
@@ -30,9 +30,8 @@ setReplaceMethod(
   "path",
   signature = "ImageArray",
   function(object, value) {
-    n.levels <- length(object)
     # update all paths
-    for (i in seq_len(n.levels)) {
+    for (i in seq_along(object)) {
       object[[i]] <-
         modify_seeds(
           object[[i]],
@@ -42,7 +41,7 @@ setReplaceMethod(
             # this also requires normalizing the path to ensure correct
             # replacement on Windows
             file_path <- path(x)
-            if (methods::is(x, "ZarrArraySeed")) {
+            if (methods::is(x, "_ZarrArraySeed")) {
               value <- gsub(
                 normalizePath(dirname(file_path), winslash = "\\"),
                 value,
@@ -210,8 +209,7 @@ is.sequential <- function(x) {
   if (i %% 1 != 0) {
     stop("Level should be an integer!")
   }
-  n.levels <- length(x)
-  if (i < 1 || n.levels < i) {
+  if (i < 1 || length(x) < i) {
     stop("Level is outside of range")
   }
 }
