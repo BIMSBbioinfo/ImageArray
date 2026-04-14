@@ -89,7 +89,7 @@ for pyramid images, including rotation (0, 90, 180, 270), horizontal or
 vertical flipping and negation. 
 
 ```r
-imgarray <- rotate(imgarray, degrees = 90)
+imgarray <- rotate(imgarray, angle = 90)
 imgarray
 ```
 

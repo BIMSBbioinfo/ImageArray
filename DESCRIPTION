@@ -1,7 +1,7 @@
 Package: ImageArray
 Type: Package
 Title: ImageArray: a framework for on-disk and in-memory image arrays
-Version: 0.99.7
+Version: 0.99.9
 Date: 2026-01-20
 Authors@R: 
 	person("Artür", "Manukyan", 
@@ -37,8 +37,6 @@ Suggests:
   RBioFormats,
   BiocFileCache,
   BiocStyle
-Remotes:
-  Bioconductor/ZarrArray
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/BIMSBbioinfo/ImageArray
