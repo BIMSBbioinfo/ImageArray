@@ -1,3 +1,5 @@
+setOldClass("ome_zarr")
+
 .ImageArray <- setClass(
   Class = "ImageArray",
   slots = c(
