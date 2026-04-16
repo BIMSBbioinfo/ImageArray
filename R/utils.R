@@ -220,4 +220,4 @@ is.sequential <- function(x) {
 
 #' @keywords internal
 #' @noRd
-.AXES <- c("c", "y", "x")
+.AXES <- c("c", "y", "x", "z", "t")
