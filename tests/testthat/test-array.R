@@ -42,7 +42,7 @@ test_that("check indexing (BFArray)", {
   imgarray <- createImageArray(img.file, series = 1, resolution = 1:2)
   
   # crop
-  imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200, 1))
+  imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200))
   imgarray_vis <- as.raster(imgarray_vis)
   plot(imgarray_vis)
   
