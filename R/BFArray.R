@@ -167,6 +167,7 @@ setMethod("type", "BFArraySeed", function(x) x@type)
       subset = subset_list
     )
     res <- EBImage::imageData(res)
+    dim(res) <- len_ind
   }
 
   res
