@@ -227,7 +227,7 @@ createBFArray <- function(
   image_list <- lapply(resolution, function(res) {
     BFArray(image, series = series, resolution = res)
   })
-  ImageArray(meta = list(axes = c("x", "y", "c")), levels = image_list)
+  ImageArray(meta = list(axes = tolower(names(image_list[[1]]@seed@shape))), levels = image_list)
 }
 
 #' createMagickArray
