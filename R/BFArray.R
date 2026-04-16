@@ -112,7 +112,7 @@ BFArraySeed <- function(filepath, series, resolution, shape, type) {
 ###
 
 #' @describeIn BFArray-methods dim function for BFArray objects
-setMethod("dim", "BFArraySeed", function(x) x@shape)
+setMethod("dim", "BFArraySeed", function(x) unname(x@shape))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### type() getter
