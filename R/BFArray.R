@@ -40,6 +40,14 @@ BFArray <- function(image.file, series, resolution) {
   len_meta <- lengths(meta.data@.Data)
   meta.data@.Data <- meta.data@.Data[which(len_meta > 0)]
 
+  # full image axes from metadata (always lowercase)
+  if( "coreMetadata" %in% names(meta.data)) {
+    axes <-  meta.data$coreMetadata$dimensionOrder
+  } else if ("coreMetadata" %in% names(meta.data[[1]])) {
+    axes <- meta.data@.Data[[1]]$coreMetadata$dimensionOrder
+  }
+  axes <- tolower(unlist(strsplit(axes, "")))
+
   # get shape
   series_res_meta <- vapply(
     meta.data@.Data,
@@ -58,7 +66,7 @@ BFArray <- function(image.file, series, resolution) {
     )
   if (length(series_index) > 0) {
     shape <- vapply(
-      c("sizeX", "sizeY", "sizeC"),
+      sprintf("size%s", toupper(axes)),
       function(x) {
         md <- meta.data@.Data[[series_index]]
         if (!is.null(cm <- md$coreMetadata)) {
@@ -69,6 +77,10 @@ BFArray <- function(image.file, series, resolution) {
       integer(1),
       USE.NAMES = FALSE
     )
+    
+    names(shape) <- toupper(axes)
+    # remove dimensions with size 1 to mimic RBioFormats::read.image behavior
+    shape <- shape[shape > 1]
 
     seed <- BFArraySeed(
       filepath = image.file,
@@ -100,7 +112,7 @@ BFArraySeed <- function(filepath, series, resolution, shape, type) {
 ###
 
 #' @describeIn BFArray-methods dim function for BFArray objects
-setMethod("dim", "BFArraySeed", function(x) x@shape)
+setMethod("dim", "BFArraySeed", function(x) unname(x@shape))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### type() getter
@@ -120,10 +132,10 @@ setMethod("type", "BFArraySeed", function(x) x@type)
     stop("Please install RBioFormats: BiocManager::install('RBioFormats')")
   }
 
-  # check for index length
-  if (length(index) > 3) {
-    stop("You cannot get BFArray slices more than 2 dimensions!")
-  }
+  # # check for index length
+  # if (length(index) > 3) {
+  #   stop("You cannot get BFArray slices more than 2 dimensions!")
+  # }
 
   # create slices
   ind <- mapply(
@@ -147,10 +159,7 @@ setMethod("type", "BFArraySeed", function(x) x@type)
     res <- array(dim = len_ind)
     type(res) <- x@type
   } else {
-    subset_list <- list(X = ind[[1]], Y = ind[[2]])
-    if (length(len_ind) == 3) {
-      subset_list <- c(subset_list, list(C = ind[[3]]))
-    }
+    subset_list <- setNames(ind , names(x@shape))
     res <- RBioFormats::read.image(
       file = x@filepath,
       series = x@series,
@@ -158,9 +167,7 @@ setMethod("type", "BFArraySeed", function(x) x@type)
       subset = subset_list
     )
     res <- EBImage::imageData(res)
-    if (length(dim(res)) != 3) {
-      res <- array(res, dim = c(dim(res), 1))
-    }
+    dim(res) <- len_ind
   }
 
   res

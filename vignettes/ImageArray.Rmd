@@ -208,6 +208,20 @@ plot(bfa.raster)
 dim(bfa.raster)
 ```
 
+`r Biocpkg("ImageArray")` can also read OME-TIFF files with all five dimensions (XYZCT)
+available in the OME (Open Microscopy Environment) specifications. RBioFormats would drop
+any of the dimensions with only one level. 
+
+```{r 4d, out.width="50%"}
+ome.tiff.file <- system.file("extdata", "4D-series.ome.tiff",
+                             package = "ImageArray")
+read.metadata(ome.tiff.file, proprietary.metadata = TRUE, filter.metadata = TRUE)
+
+# define ImageArray object
+imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1)
+imgarray
+```
+
 # Use cases
 
 The delayed pyramid scheme introduced by `ImageArray` objects can also 

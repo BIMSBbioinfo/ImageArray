@@ -42,7 +42,7 @@ test_that("check indexing (BFArray)", {
   imgarray <- createImageArray(img.file, series = 1, resolution = 1:2)
   
   # crop
-  imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200, 1))
+  imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200))
   imgarray_vis <- as.raster(imgarray_vis)
   plot(imgarray_vis)
   
@@ -55,15 +55,15 @@ test_that("check indexing (BFArray)", {
   )
   
   # [ method works
-  imgarray_vis <- imgarray[100:200,,]
-  expect_equal(dim(imgarray_vis), c(101, dim(imgarray)[2], 1))
-  imgarray_vis <- imgarray[,100:200,]
-  expect_equal(dim(imgarray_vis), c(dim(imgarray)[1], 101, 1))
-  imgarray_vis <- imgarray[,,]
+  imgarray_vis <- imgarray[100:200,]
+  expect_equal(dim(imgarray_vis), c(101, dim(imgarray)[2]))
+  imgarray_vis <- imgarray[,100:200]
+  expect_equal(dim(imgarray_vis), c(dim(imgarray)[1], 101))
+  imgarray_vis <- imgarray[,]
   expect_equal(dim(imgarray_vis), dim(imgarray))
   
   # [ indexing error
-  expect_error(imgarray[100:200,])
+  expect_error(imgarray[,100:200,])
   expect_error(imgarray[100:200,,2])
   expect_error(imgarray[-100:200,,])
   expect_error(imgarray[,-100,])
