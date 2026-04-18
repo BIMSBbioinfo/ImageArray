@@ -8,7 +8,7 @@ test_that("image array class", {
   
   # incorrect axes names
   expect_error(
-    imgarray <- ImageArray(meta = list(axes = c("c", "z", "x")), 
+    imgarray <- ImageArray(meta = list(axes = c("b", "a", "d")), 
                            levels = list(array(1:75, dim = c(3,5,5))))
   )
   

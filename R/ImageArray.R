@@ -227,7 +227,7 @@ createBFArray <- function(
   image_list <- lapply(resolution, function(res) {
     BFArray(image, series = series, resolution = res)
   })
-  ImageArray(meta = list(axes = c("x", "y", "c")), levels = image_list)
+  ImageArray(meta = list(axes = tolower(names(image_list[[1]]@seed@shape))), levels = image_list)
 }
 
 #' createMagickArray
@@ -280,10 +280,13 @@ createMagickArray <- function(
     stop("'n.levels' has to be 1 or a larger integer value!")
   }
 
-  # create image levels
+  # get axes, EBImage accepts XY or XYC
+  axes <- c("c", "x", "y")
   if (verbose) {
     .img_create_msg(dim(image), 1)
   }
+  
+  # create image levels
   image_data <- magick::image_data(image, channels = "rgb")
   storage.mode(image_data) <- "integer"
   image_list <- list(DelayedArray::DelayedArray(as.array(image_data)))
@@ -307,7 +310,7 @@ createMagickArray <- function(
   }
 
   # return
-  ImageArray(meta = list(axes = c("c", "x", "y")), levels = image_list)
+  ImageArray(meta = list(axes = axes), levels = image_list)
 }
 
 #' createMagickArray
@@ -355,7 +358,7 @@ createEBImageArray <- function(
   # check dim
   .check_dim(image)
 
-  # create image levels
+  # get axes, EBImage accepts XY or XYC
   meta <- list(axes = c("x", "y", "c"))
   if (verbose) {
     .img_create_msg(dim_image, 1)
@@ -364,6 +367,8 @@ createEBImageArray <- function(
   meta[["axes"]] <- meta[["axes"]][img_perm]
   img_perm <- stats::setNames(img_perm, meta[["axes"]])
   img <- aperm(image, img_perm)
+  
+  # create image levels
   image_list <- list(DelayedArray::DelayedArray(img))
   if (n.levels > 1) {
     cur_image <- image
