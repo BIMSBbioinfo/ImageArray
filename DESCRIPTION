@@ -38,6 +38,8 @@ Suggests:
   RBioFormats,
   BiocFileCache,
   BiocStyle
+Remotes:
+  Huber-group-EMBL/rome
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/BIMSBbioinfo/ImageArray

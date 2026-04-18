@@ -2,13 +2,15 @@
 #' 
 #' @examples
 #' if(!requireNamespace("rome", quietly = TRUE))
-#'   devtools::install_github("Huber-group-EMBL/rome")
+#' devtools::install_github("Huber-group-EMBL/rome")
+#' omezarrfile <- system.file("extdata", "10501752.zarr.zip", 
+#'                            package = "ImageArray")
+#' dir.create(td <- tempfile())
+#' utils::unzip(omezarrfile, exdir=td)
 #' library(rome)
-#' x <- ome_read(
-#'   system.file("extdata", "10501752.zarr", package = "ImageArray"),
-#'   lazy = TRUE
-#' )
-#' as.ImageArray(x)
+#' omezarrimg <- ome_read(path = file.path(td, "10501752.zarr"), lazy = TRUE)
+#' imgarray <- as.ImageArray(x)
+#' imgarray
 setMethod(
   "as.ImageArray",
   "ome_zarr",
