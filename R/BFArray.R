@@ -132,11 +132,6 @@ setMethod("type", "BFArraySeed", function(x) x@type)
     stop("Please install RBioFormats: BiocManager::install('RBioFormats')")
   }
 
-  # # check for index length
-  # if (length(index) > 3) {
-  #   stop("You cannot get BFArray slices more than 2 dimensions!")
-  # }
-
   # create slices
   ind <- mapply(
     function(x, y) {
