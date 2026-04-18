@@ -222,6 +222,23 @@ imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1)
 imgarray
 ```
 
+## OME-ZARR images
+
+`r Biocpkg("ImageArray")` incorporates the `r Biocpkg("rome")` package to read 
+OME-ZARR images.
+
+```{r omezarr"}
+if(!requireNamespace("rome", quietly = TRUE))
+  devtools::install_github("Huber-group-EMBL/rome")
+omezarrfile <- system.file("extdata", "10501752.zarr.zip", 
+                           package = "ImageArray")
+dir.create(td <- tempfile())
+utils::unzip(omezarrfile, exdir=td)
+library(rome)
+x <- ome_read(path = file.path(td, "10501752.zarr"), lazy = TRUE)
+as.ImageArray(x)
+```
+
 # Use cases
 
 The delayed pyramid scheme introduced by `ImageArray` objects can also 
