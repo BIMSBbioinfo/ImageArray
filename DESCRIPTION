@@ -1,7 +1,7 @@
 Package: ImageArray
 Type: Package
 Title: ImageArray: a framework for on-disk and in-memory image arrays
-Version: 0.99.9
+Version: 0.99.10
 Date: 2026-01-20
 Authors@R: 
 	person("Artür", "Manukyan", 
