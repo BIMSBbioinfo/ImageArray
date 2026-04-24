@@ -4,14 +4,18 @@
 #' @export
 setMethod("path", signature = "ImageArray", function(object) {
   
-  # check DelayedArray
+  # check one layer
   obj <- object[[1]]
-  if (!inherits(obj, "DelayedArray")) {
+  
+  # check out of memory seed objects
+  if (!inherits(seed(obj), c("HDF5ArraySeed", "ZarrArraySeed"))) {
     stop(
       "The path method is only applicable to ImageArray objects ",
       "whose layers with DelayedArray seeds."
     )
   }
+  
+  # get path
   file_path <- DelayedArray::path(obj)
 
   # check if path is a zarr path
@@ -216,7 +220,7 @@ is.sequential <- function(x) {
 
 #' @keywords internal
 #' @noRd
-.FORMATS <- c("in-memory", "h5", "zarr")
+.FORMATS <- c("in-memory", "h5", "hdf5", "zarr")
 
 #' @keywords internal
 #' @noRd

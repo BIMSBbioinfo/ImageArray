@@ -78,11 +78,10 @@
 #'
 #' # create ImageArray on disk as HDF5 format
 #' dir.create(td <- tempfile())
-#' output_h5ad <- file.path(td, "h5test")
+#' output_h5 <- tempfile(fileext = ".h5")
 #' imgarray <- writeImageArray(img.file,
-#'                           output = output_h5ad,
+#'                           output = output_h5,
 #'                           name = "image",
-#'                           format = "h5",
 #'                           verbose = FALSE)
 #'
 #' # as.raster
@@ -527,11 +526,10 @@ createImageArray <- function(
 #'
 #' # create ImageArray
 #' dir.create(td <- tempfile())
-#' output_h5ad <- file.path(td, "h5test")
+#' output_h5 <- tempfile(fileext = ".h5")
 #' imgarray <- writeImageArray(img.file,
-#'                           output = output_h5ad,
+#'                           output = output_h5,
 #'                           name = "image",
-#'                           format = "h5",
 #'                           verbose = FALSE)
 #' imgarray_raster <- as.raster(imgarray)
 #' plot(imgarray_raster)
@@ -552,16 +550,6 @@ writeImageArray <- function(
   # verbose
   verbose <- DelayedArray:::normarg_verbose(verbose)
 
-  # create or replace output folder
-  if (!.isTRUEorFALSE(replace)) {
-    stop("'replace' must be TRUE or FALSE")
-  }
-
-  # remove files or folders if needed
-  if (replace) {
-    unlink(output, recursive = TRUE)
-  }
-
   # make Image Array
   if (!inherits(image, "ImageArray")) {
     image_list <- createImageArray(
@@ -573,19 +561,47 @@ writeImageArray <- function(
   } else {
     image_list <- image
   }
+  
+  # create or replace output folder
+  if (!.isTRUEorFALSE(replace)) {
+    stop("'replace' must be TRUE or FALSE")
+  }
 
   # check format
-  if (is.null(format)) {
-    format <- tools::file_ext(output)
-    if (!format %in% .FORMATS) {
-      stop(
+  fileext <- tools::file_ext(output)
+  if (is.null(format)){
+    format <- fileext
+  } else {
+    if(format == "hdf5") format <- "h5"
+    if(fileext != format && format != "in-memory") {
+      warning(
         sprintf(
-          "Invalid format: %s. Currently supported formats are %s.",
+          paste(
+            "The file extension of the output path%s does", 
+            "not match the specified format (%s),", 
+            "The object will be written as (%s).", 
+            sep = " "
+          ),
+          if (fileext == "") "" else paste0(" (", fileext, ")"),
           format,
-          toString(sprintf('"%s"', .FORMATS))
+          format
         )
       )
     }
+  }
+  if (!format %in% .FORMATS) {
+    stop(
+      sprintf(
+        "Invalid format: %s. Currently supported formats are %s.",
+        format,
+        toString(sprintf('"%s"', .FORMATS))
+      )
+    )
+  }
+  
+  # remove files or folders if needed
+  if (replace && format != "in-memory") {
+    unlink(output, recursive = TRUE)
   }
 
   # open ondisk store
@@ -605,6 +621,12 @@ writeImageArray <- function(
         create_zarr(store = output)
       }
       create_zarr_group(output, name)
+    },
+    `in-memory` = {
+      message(
+        "The format is defined as 'in-memory', thus ImageArray will be saved ", 
+        "to memory and the output path will be ignored."
+      )
     }
   )
 

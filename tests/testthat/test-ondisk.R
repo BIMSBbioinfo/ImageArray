@@ -3,7 +3,7 @@ library(rhdf5)
 library(HDF5Array)
 library(Rarr)
 
-output_h5ad <- tempfile(fileext = ".h5")
+output_h5 <- tempfile(fileext = ".h5")
 output_zarr <- tempfile(fileext = ".zarr")
 
 # build image array
@@ -21,7 +21,7 @@ test_that("write image array to disk", {
   # create image array
   imgarray <- writeImageArray(
     img,
-    output = output_h5ad,
+    output = output_h5,
     name = "image",
     format = "h5",
     replace = TRUE,
@@ -45,5 +45,5 @@ test_that("write image array to disk", {
 
   # refresh
   unlink(output_zarr, recursive = TRUE)
-  file.remove(output_h5ad)
+  file.remove(output_h5)
 })

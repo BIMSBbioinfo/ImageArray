@@ -3,7 +3,7 @@ library(rhdf5)
 library(HDF5Array)
 library(Rarr)
 
-output_h5ad <- tempfile(fileext = ".h5")
+output_h5 <- tempfile(fileext = ".h5")
 output_zarr <- tempfile(fileext = ".zarr")
 
 # build image array
@@ -21,7 +21,7 @@ test_that("path hdf5", {
   # h5
   mat_list <- writeImageArray(
     mat_image,
-    output = output_h5ad,
+    output = output_h5,
     name = "image",
     format = "h5",
     replace = TRUE,
@@ -31,12 +31,12 @@ test_that("path hdf5", {
   expect_true(file.exists(path(mat_list)))
 
   # change path
-  output_h5ad_replace <- gsub(".h5$", "2.h5", path(mat_list))
-  file.rename(path(mat_list), output_h5ad_replace)
-  expect_true(file.exists(output_h5ad_replace))
-  path(mat_list) <- output_h5ad_replace
+  output_h5_replace <- gsub(".h5$", "2.h5", path(mat_list))
+  file.rename(path(mat_list), output_h5_replace)
+  expect_true(file.exists(output_h5_replace))
+  path(mat_list) <- output_h5_replace
   expect_true(file.exists(path(mat_list)))
-  expect_equal(path(mat_list), output_h5ad_replace)
+  expect_equal(path(mat_list), output_h5_replace)
 })
 
 test_that("path zarr", {

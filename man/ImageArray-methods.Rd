@@ -199,11 +199,10 @@ imgarray <- flop(imgarray)
 
 # create ImageArray on disk as HDF5 format
 dir.create(td <- tempfile())
-output_h5ad <- file.path(td, "h5test")
+output_h5 <- tempfile(fileext = ".h5")
 imgarray <- writeImageArray(img.file,
-                          output = output_h5ad,
+                          output = output_h5,
                           name = "image",
-                          format = "h5",
                           verbose = FALSE)
 
 # as.raster

@@ -5,7 +5,7 @@ library(Rarr)
 skip_if_not_installed("ggplot2")
 library(ggplot2)
 
-output_h5ad <- tempfile(fileext = ".h5")
+output_h5 <- tempfile(fileext = ".h5")
 output_zarr <- tempfile(fileext = ".zarr")
 
 # build image array
@@ -34,7 +34,7 @@ test_that("visualize h5 ImageArray", {
   # create image array
   mat_list <- writeImageArray(
     mat_image,
-    output = output_h5ad,
+    output = output_h5,
     name = "image",
     format = "h5",
     replace = TRUE,
