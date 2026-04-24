@@ -620,7 +620,9 @@ writeImageArray <- function(
       if (!dir.exists(output)) {
         create_zarr(store = output)
       }
-      create_zarr_group(output, name)
+      if (!name %in% c("", "/")) {
+        create_zarr_group(output, name)
+      }
     },
     `in-memory` = {
       message(
