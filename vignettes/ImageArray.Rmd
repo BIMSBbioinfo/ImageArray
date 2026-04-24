@@ -145,11 +145,26 @@ imgarray_cropped
 Cropping can also be performed with named indices, thus allowing users
 to define indices for only the target dimensions. For now, 
 `r Biocpkg("ImageArray")` only includes `x` and `y` dimensions and 'c' for
-image channels.
+image channels. 
 
 ```{r crop_named}
 # cropping with named indices
 imgarray_cropped <- crop(imgarray, index = list(x=300:500, y=200:300))
+imgarray_cropped
+```
+
+The `crop` function serves as a more flexible alternative to the traditional
+subsetting method `[`. The named list of `index` can be of any order 
+while `[` requires the order matching with the order of axis 
+(as revealed in the show method, i.e. `(x,y)`).
+
+```{r crop_named2}
+# index in yx order, results in same slice as xy order
+imgarray_cropped <- crop(imgarray, index = list(y=200:300, x=300:500))
+imgarray_cropped
+
+# subsetting with `[` provides a different slice
+imgarray_cropped <- imgarray[200:300, 300:500]
 imgarray_cropped
 ```
 
