@@ -1,7 +1,7 @@
 Package: ImageArray
 Type: Package
 Title: A framework for on-disk and in-memory image arrays
-Version: 1.0.0
+Version: 1.1.0
 Date: 2026-01-20
 Authors@R: 
 	person("Artür", "Manukyan", 
