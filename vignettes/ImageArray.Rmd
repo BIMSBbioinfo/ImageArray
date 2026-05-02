@@ -239,6 +239,27 @@ x <- ome_read(path = file.path(td, "10501752.zarr"), lazy = TRUE)
 as.ImageArray(x)
 ```
 
+## SpatialData images and labels
+
+`r Biocpkg("ImageArray")` can also use the `r Biocpkg("rome")` package to 
+validate and represent image pyramids from the `r Biocpkg("SpatialData")` 
+package
+
+```{r sd}
+if(!requireNamespace("SpatialData", quietly = TRUE))
+  devtools::install_github("SpatialData")
+if(!requireNamespace("SpatialData.validate", quietly = TRUE))
+  devtools::install_github("SpatialData.validate")
+path <- system.file("extdata", "blobs_v3.zarr", package="SpatialData")
+x <- ome_read(file.path(path, "images/blobs_multiscale_image/"))
+as.ImageArray(x)
+```
+
+```{r sd_labels}
+x <- ome_read(file.path(path, "labels/blobs_multiscale_labels/"))
+as.ImageArray(x)
+```
+
 # Use cases
 
 The delayed pyramid scheme introduced by `ImageArray` objects can also 
