@@ -575,17 +575,10 @@ writeImageArray <- function(
     if(format == "hdf5") format <- "h5"
     if(fileext != format && format != "in-memory") {
       warning(
-        sprintf(
-          paste(
-            "The file extension of the output path%s does", 
-            "not match the specified format (%s),", 
-            "The object will be written as (%s).", 
-            sep = " "
-          ),
-          if (fileext == "") "" else paste0(" (", fileext, ")"),
-          format,
-          format
-        )
+        "The file extension of the output path", 
+        if (fileext == "") "" else sprintf(" '%s'", fileext),
+        " does not match the specified format (", format, "). ", 
+        "The object will be saved as ", format, " format. "
       )
     }
   }

@@ -17,8 +17,7 @@ mat_raster <- as.raster(mat, max = 255)
 # read as magick object
 mat_image <- magick::image_read(mat_raster)
 
-test_that("path hdf5", {
-  # h5
+test_that("path HDF5", {
   mat_list <- writeImageArray(
     mat_image,
     output = output_h5,
@@ -39,8 +38,7 @@ test_that("path hdf5", {
   expect_equal(path(mat_list), output_h5_replace)
 })
 
-test_that("path zarr", {
-  # zarr
+test_that("path Zarr", {
   mat_list <- writeImageArray(
     mat_image,
     output = output_zarr,

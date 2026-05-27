@@ -11,6 +11,11 @@ setGeneric("flip")
 setGeneric("flop")
 
 # transformations
-setGeneric("scale_transform", \(x, ...) standardGeneric("scale_transform"))
-setGeneric("affine_transform", \(x, ...) standardGeneric("affine_transform"))
-setGeneric("translate_transform", \(x, ...) standardGeneric("translate_transform"))
+setGeneric("scale_transform", 
+           \(x, ...) standardGeneric("scale_transform"))
+setGeneric("affine_transform", 
+           \(x, ...) standardGeneric("affine_transform"))
+setGeneric("translate_transform", 
+           \(x, ...) standardGeneric("translate_transform"))
+setGeneric("rotate_transform", 
+           \(x, ...) standardGeneric("rotate_transform"))

@@ -223,7 +223,7 @@ plot(bfa.raster)
 dim(bfa.raster)
 ```
 
-# Delayed Operations
+# Image Transformations
 
 ```{r delayed}
 ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
@@ -250,7 +250,7 @@ imgarray2
 
 ## translation 
 
-```{r scale}
+```{r translation}
 imgarray_trans <- translate_transform(imgarray2,
                                       shift = c(100,20))
 ```
@@ -265,7 +265,16 @@ imgarray_scale <- scale_transform(imgarray2,
 
 ## affine transformation
 
-```{r scale}
+```{r affine}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_affine <- affine_transform(imgarray2, 
+                                    m = m, 
+                                    filter = "bilinear")
+```
+
+## sequence transformation
+
+```{r sequence}
 m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
 imgarray_affine <- affine_transform(imgarray2, 
                                     m = m, 
@@ -276,8 +285,6 @@ imgarray_scale <- scale_transform(imgarray_affine,
 imgarray_trans <- translate_transform(imgarray_scale,
                                       shift = c(100,20))
 ```
-
-## sequence transformation
 
 # Use cases
 

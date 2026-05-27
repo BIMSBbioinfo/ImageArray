@@ -63,7 +63,7 @@ setMethod("type", "DelayedImageSeed", function(x) {
 }
 
 .from_homogeneous <- function(M) {
-  M[, 1:2, drop = FALSE]
+  M[, seq_len(2), drop = FALSE]
 }
 
 .translate_h <- function(dx, dy) {
@@ -88,11 +88,6 @@ setMethod("type", "DelayedImageSeed", function(x) {
 
 .spatial_perm <- function(ndim, axes) {
   xy <- match(c("x", "y"), axes)
-  
-  if (anyNA(xy)) {
-    stop("'axes' must contain 'x' and 'y'")
-  }
-  
   c(xy, setdiff(seq_len(ndim), xy))
 }
 
@@ -258,14 +253,9 @@ setMethod("type", "DelayedImageSeed", function(x) {
        y = c(bboxmin[2], bboxmax[2]))
 }
 
-# .get_bbox_from_extent <- function(extent){
-#   list(min = vapply(extent, \(.) min(.), numeric(1), USE.NAMES = FALSE),
-#        max = vapply(extent, \(.) max(.), numeric(1), USE.NAMES = FALSE))
-# }
-
 .get_bbox_from_extent <- function(ext,m){
-  px <- as.matrix(expand.grid(ext$x, ext$y))
-  transformed <- sweep(px %*% m[1:2,], 2L, m[3,], "+")
+  px <- as.matrix(expand.grid(ext[[1]], ext[[2]]))
+  transformed <- sweep(px %*% m[seq_len(2),], 2L, m[3,], "+")
   bbox.min <- apply(transformed, 2L, min)
   bbox.max <- apply(transformed, 2L, max)
   list(min = bbox.min, max = bbox.max)
@@ -381,7 +371,9 @@ setMethod(
 setGeneric("extent", \(x, ...) standardGeneric("extent"))
 
 setMethod("extent", "ImageArray", function(x){
-  extent(x[[1]])
+  dims <- c("x", "y")
+  xy <- match(dims, axes(x))
+  setNames(extent(x[[1]])[xy], dims)
 })
 
 setMethod("extent", "DelayedArray", function(x){
@@ -402,7 +394,7 @@ setMethod("extent", "DelayedTranslateSeed", function(x){
   ext[xy] <- Map(\(i,j){
     i+j
   }, ext[xy],x@shift)
-  ext[xy]
+  ext
 })
 
 setMethod("extent", "Array", function(x){
@@ -516,40 +508,39 @@ setMethod("scale_transform",
 
 setMethod("scale_transform", signature = "DelayedArray", .scale_transform)
 
-rotate_transform <- function(x,
-                        angle,
-                        output.dim = NULL,
-                        output.origin = c(0,0),
-                        axes = NULL,
-                        filter = c("bilinear", "none"),
-                        bg.col = "black",
-                        antialias = TRUE) {
+.rotate_transform <- function(x,
+                              angle,
+                              output.dim = NULL,
+                              output.origin = c(0,0),
+                              axes = NULL,
+                              filter = c("bilinear", "none"),
+                              bg.col = "black",
+                              antialias = TRUE) {
   if (length(angle) != 1L || !is.numeric(angle)) 
     stop("'angle' must be a number")
   if (!missing(output.dim)) 
     if (length(output.dim) != 2L || !is.numeric(output.dim)) 
       stop("'output.dim' must be a numeric vector of length 2")
   if ((angle%%90) == 0) 
-    filter = "none"
-  angle = angle * pi/180
-  d = dim(x)[1:2]
-  dx = d[1]
-  dy = d[2]
-  cos = cos(angle)
-  sin = sin(angle)
+    filter <- "none"
+  angle <- angle * pi/180
+  xy <- match(c("x", "y"), axes)
+  d <- dim(x)[xy]
+  cos <- cos(angle)
+  sin <- sin(angle)
   if (missing(output.origin)) {
-    newdim = c(dx * abs(cos) + dy * abs(sin), dx * abs(sin) + 
-                 dy * abs(cos))
-    offset = c(dx * max(0, -cos) + dy * max(0, sin), dx * 
-                 max(0, -sin) + dy * max(0, -cos))
+    newdim <- c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
+                  d[2] * abs(cos))
+    offset <- c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
+                 max(0, -sin) + d[2] * max(0, -cos))
     if (missing(output.dim)) 
-      output.dim = newdim
-    else offset = offset + (output.dim - newdim)/2
+      output.dim <- newdim
+    else offset <- offset + (output.dim - newdim)/2
   }
   else {
     if (length(output.origin) != 2L || !is.numeric(output.origin)) 
       stop("'output.origin' must be a numeric vector of length 2")
-    offset = c(output.origin[1L] * (1 - cos) + output.origin[2L] * 
+    offset <- c(output.origin[1L] * (1 - cos) + output.origin[2L] * 
                  sin, output.origin[2L] * (1 - cos) - output.origin[1L] * 
                  sin)
   }
@@ -562,6 +553,8 @@ rotate_transform <- function(x,
                    bg.col = bg.col,
                    antialias = antialias)
 }
+
+setMethod("rotate_transform", signature = "DelayedArray", .rotate_transform)
 
 .translate_transform <- function(x,
                                  shift = c(0,0),
