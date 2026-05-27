@@ -223,6 +223,62 @@ plot(bfa.raster)
 dim(bfa.raster)
 ```
 
+# Delayed Operations
+
+```{r delayed}
+ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
+                             package = "ImageArray")
+read.metadata(ome.tiff.file)
+
+# define ImageArray object
+imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+imgarray
+```
+
+```{r delayed_magick}
+# make random EBImage image
+f <- system.file("images", "sample.png", package = "EBImage")
+
+# read image with magick
+img <- image_read(f)
+
+# create image array
+output_h5 <- tempfile(fileext = ".h5")
+imgarray2 <- writeImageArray(img, output = output_h5)
+imgarray2
+```
+
+## translation 
+
+```{r scale}
+imgarray_trans <- translate_transform(imgarray2,
+                                      shift = c(100,20))
+```
+
+## scale transformation
+
+```{r scale}
+imgarray_scale <- scale_transform(imgarray2, 
+                                  output.dim = c(200,300),
+                                  filter = "bilinear")
+```
+
+## affine transformation
+
+```{r scale}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_affine <- affine_transform(imgarray2, 
+                                    m = m, 
+                                    filter = "bilinear")
+imgarray_scale <- scale_transform(imgarray_affine, 
+                                  output.dim = c(200,300),
+                                  filter = "bilinear")
+imgarray_trans <- translate_transform(imgarray_scale,
+                                      shift = c(100,20))
+```
+
+## sequence transformation
+
 # Use cases
 
 The delayed pyramid scheme introduced by `ImageArray` objects can also 
