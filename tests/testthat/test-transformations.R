@@ -152,5 +152,15 @@ for(ni in names(img_list)) {
       extent(imgarray_trans),
       mapply(\(i,j) i+j, extent(imgarray_scale), shift, SIMPLIFY = FALSE)
     )
+    
+    # check subset
+    index <- list(x = 30:47, y = 53:58)
+    imgarray_subset <- crop(imgarray_trans, index = index)
+    img_subset <- test_subset(img_scale, axes(imgarray), index)
+    dimnames(img_subset) <- NULL
+    expect_equal(
+      realize(imgarray_subset[[1]]), 
+      img_subset
+    )
   })
 }
