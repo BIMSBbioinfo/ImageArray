@@ -1,13 +1,29 @@
+#' @name trans
+#' @rdname trans
+#' @title Transformations
+#' @aliases scale translation affine
+#' 
+#' @description
+#' Transformation methods for objects of ImageArray class. By default, 
+#' these operations are delayed thus transformations are only performed
+#' when realized into the memory
+#' 
+#' @param x an ImageArray object
+#' @inheritParams EBImage::affine
+#' @param axes axes
+#' @param shift translation shift parameter, a vector of length 2
+#' @param ... arguments passed to other methods
+#' 
+#' @returns an \code{ImageArray} object.
+NULL
+
 ####
 # Classes ####
 ####
 
-## Delayed affine helpers + constructor
-## Assumes these packages are available/loaded:
-## library(DelayedArray)
-## library(S4Arrays)
-## library(EBImage)
-
+#' @noRd
+#' @rdname trans
+#' @keywords internal
 setClass(
   "DelayedAffineSeed",
   contains = "DelayedUnaryOp",
@@ -23,6 +39,9 @@ setClass(
   )
 )
 
+#' @noRd
+#' @rdname trans
+#' @keywords internal
 setClass(
   "DelayedTranslateSeed",
   contains = "DelayedUnaryOp",
@@ -35,18 +54,28 @@ setClass(
   )
 )
 
-setClassUnion("DelayedImageSeed", 
+setClassUnion("DelayedTransformSeed", 
               c("DelayedAffineSeed", "DelayedTranslateSeed"))
 
-setMethod("dim", "DelayedImageSeed", function(x) {
+
+#' @noRd
+#' @rdname trans
+#' @keywords internal
+setMethod("dim", "DelayedTransformSeed", function(x) {
   x@dim
 })
 
-setMethod("dimnames", "DelayedImageSeed", function(x) {
+#' @noRd
+#' @rdname trans
+#' @keywords internal
+setMethod("dimnames", "DelayedTransformSeed", function(x) {
   x@dimnames
 })
 
-setMethod("type", "DelayedImageSeed", function(x) {
+#' @noRd
+#' @rdname trans
+#' @keywords internal
+setMethod("type", "DelayedTransformSeed", function(x) {
   DelayedArray::type(x@seed)
 })
 
@@ -368,18 +397,22 @@ setMethod(
 
 # extent ####
 
-setGeneric("extent", \(x, ...) standardGeneric("extent"))
-
+#' @export
+#' @rdname trans
 setMethod("extent", "ImageArray", function(x){
   dims <- c("x", "y")
   xy <- match(dims, axes(x))
   setNames(extent(x[[1]])[xy], dims)
 })
 
+#' @keywords internal
+#' @noRd
 setMethod("extent", "DelayedArray", function(x){
   extent(x@seed)
 })
 
+#' @keywords internal
+#' @noRd
 setMethod("extent", "DelayedAffineSeed", function(x){
   ext <- extent(x@seed)
   xy <- match(c("x", "y"), x@axes)
@@ -388,6 +421,8 @@ setMethod("extent", "DelayedAffineSeed", function(x){
   ext
 })
 
+#' @keywords internal
+#' @noRd
 setMethod("extent", "DelayedTranslateSeed", function(x){
   ext <- extent(x@seed)
   xy <- match(c("x", "y"), x@axes)
@@ -397,6 +432,8 @@ setMethod("extent", "DelayedTranslateSeed", function(x){
   ext
 })
 
+#' @keywords internal
+#' @noRd
 setMethod("extent", "Array", function(x){
   lapply(dim(x), \(.){
     c(0,.)
@@ -433,7 +470,9 @@ setMethod("extent", "Array", function(x){
   DelayedArray::DelayedArray(seed)
 }
 
-setMethod("affine_transform", 
+#' @export
+#' @rdname trans
+setMethod("affine", 
           signature = "ImageArray", 
           function(x,
                    m,
@@ -445,7 +484,7 @@ setMethod("affine_transform",
             for (i in seq_along(x@levels)) {
               scl <- rep(2^(i - 1), 2)
               m <- solve(diag(c(scl, 1))) %*% m %*% diag(scl) 
-              x[[i]] <- affine_transform(
+              x[[i]] <- affine(
                 x[[i]],
                 m = m,
                 axes = ax,
@@ -457,7 +496,9 @@ setMethod("affine_transform",
             x
           })
 
-setMethod("affine_transform", signature = "DelayedArray", .affine_transform)
+#' @keywords internal
+#' @noRd
+setMethod("affine", signature = "DelayedArray", .affine_transform)
 
 .scale_transform <- function(x,
                              output.dim = NULL,
@@ -465,7 +506,8 @@ setMethod("affine_transform", signature = "DelayedArray", .affine_transform)
                              axes = NULL,
                              filter = c("bilinear", "none"),
                              bg.col = "black",
-                             antialias = TRUE) {
+                             antialias = TRUE, 
+                             ...) {
   if (length(output.origin) != 2L || !is.numeric(output.origin)) 
     stop("'output.origin' must be a numeric vector of length 2")
   xy <- match(c("x", "y"), axes)
@@ -481,7 +523,9 @@ setMethod("affine_transform", signature = "DelayedArray", .affine_transform)
                     antialias = antialias)
 }
 
-setMethod("scale_transform", 
+#' @export
+#' @rdname trans
+setMethod("scale", 
           signature = "ImageArray", 
           function(x,
                    output.dim = NULL,
@@ -489,24 +533,28 @@ setMethod("scale_transform",
                    axes = NULL,
                    filter = c("bilinear", "none"),
                    bg.col = "black",
-                   antialias = TRUE) {
+                   antialias = TRUE, 
+                   ...) {
             ax <- axes(x)
             for (i in seq_along(x@levels)) {
               cur_output.dim <- output.dim / 2^(i - 1)
-              x[[i]] <- scale_transform(
+              x[[i]] <- scale(
                 x[[i]],
                 output.dim = cur_output.dim,
                 output.origin = output.origin,
                 axes = ax,
                 filter = filter,
                 bg.col = bg.col,
-                antialias = antialias
+                antialias = antialias,
+                ...
               )
             }
             x
           })
 
-setMethod("scale_transform", signature = "DelayedArray", .scale_transform)
+#' @keywords internal
+#' @noRd
+setMethod("scale", signature = "DelayedArray", .scale_transform)
 
 .rotate_transform <- function(x,
                               angle,
@@ -546,7 +594,7 @@ setMethod("scale_transform", signature = "DelayedArray", .scale_transform)
   }
   m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
               3L, 2L)
-  affine_transform(x,
+  affine(x,
                    m,
                    axes = axes,
                    filter = filter,
@@ -554,6 +602,8 @@ setMethod("scale_transform", signature = "DelayedArray", .scale_transform)
                    antialias = antialias)
 }
 
+#' @keywords internal
+#' @noRd
 setMethod("rotate_transform", signature = "DelayedArray", .rotate_transform)
 
 .translate_transform <- function(x,
@@ -578,14 +628,16 @@ setMethod("rotate_transform", signature = "DelayedArray", .rotate_transform)
   DelayedArray::DelayedArray(seed)
 }
 
-setMethod("translate_transform", 
+#' @export
+#' @rdname trans
+setMethod("translation", 
           signature = "ImageArray", 
           function(x,
                    shift = c(0,0),
                    axes = NULL) {
             ax <- axes(x)
             for (i in seq_along(x@levels)) {
-              x[[i]] <- translate_transform(
+              x[[i]] <- translation(
                 x[[i]],
                 shift = shift,
                 axes = ax
@@ -594,4 +646,6 @@ setMethod("translate_transform",
             x
           })
 
-setMethod("translate_transform", signature = "DelayedArray", .translate_transform)
+#' @keywords internal
+#' @noRd
+setMethod("translation", signature = "DelayedArray", .translate_transform)

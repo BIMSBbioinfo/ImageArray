@@ -34,8 +34,7 @@ for(ni in names(img_list)) {
   
   test_that(paste0("translation transformation for ", ni), {
     shift <- c(100,20)
-    imgarray_trans <- translate_transform(imgarray,
-                                          shift = shift)
+    imgarray_trans <- translation(imgarray, shift = shift)
     
     # check seed
     expect_s4_class(imgarray_trans, "ImageArray")
@@ -53,7 +52,7 @@ for(ni in names(img_list)) {
   
   test_that(paste0("scaling transformation for ", ni), {
     output.dim <- c(200,300)
-    imgarray_scale <- scale_transform(imgarray, output.dim = output.dim)
+    imgarray_scale <- scale(imgarray, output.dim = output.dim)
     
     # check seed
     expect_s4_class(imgarray_scale, "ImageArray")
@@ -94,7 +93,7 @@ for(ni in names(img_list)) {
   
   test_that(paste0("affine transformation for ", ni), {
     m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
-    imgarray_affine <- affine_transform(imgarray, m = m)
+    imgarray_affine <- affine(imgarray, m = m)
     
     # check seed
     expect_s4_class(imgarray_affine, "ImageArray")
@@ -130,11 +129,11 @@ for(ni in names(img_list)) {
     img <- realize(imgarray)
     
     # affine
-    imgarray_affine <- affine_transform(imgarray, m = m)
+    imgarray_affine <- affine(imgarray, m = m)
     img_affine <- test_affine(img, axes(imgarray), m)
     
     # scale
-    imgarray_scale <- scale_transform(imgarray_affine, output.dim = output.dim)
+    imgarray_scale <- scale(imgarray_affine, output.dim = output.dim)
     img_scale <- test_scale(img_affine, axes(imgarray), output.dim = output.dim)
     
     # check equal
@@ -145,7 +144,7 @@ for(ni in names(img_list)) {
     )
     
     # translate
-    imgarray_trans <- translate_transform(imgarray_scale, shift = shift)
+    imgarray_trans <- translation(imgarray_scale, shift = shift)
     
     # check extent
     expect_equal(

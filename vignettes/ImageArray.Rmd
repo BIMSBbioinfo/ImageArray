@@ -251,39 +251,39 @@ imgarray2
 ## translation 
 
 ```{r translation}
-imgarray_trans <- translate_transform(imgarray2,
-                                      shift = c(100,20))
+imgarray_trans <- translation(imgarray2,
+                              shift = c(100,20))
 ```
 
 ## scale transformation
 
 ```{r scale}
-imgarray_scale <- scale_transform(imgarray2, 
-                                  output.dim = c(200,300),
-                                  filter = "bilinear")
+imgarray_scale <- scale(imgarray2, 
+                        output.dim = c(200,300),
+                        filter = "bilinear")
 ```
 
 ## affine transformation
 
 ```{r affine}
 m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
-imgarray_affine <- affine_transform(imgarray2, 
-                                    m = m, 
-                                    filter = "bilinear")
+imgarray_affine <- affine(imgarray2, 
+                          m = m,
+                          filter = "bilinear")
 ```
 
 ## sequence transformation
 
 ```{r sequence}
 m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
-imgarray_affine <- affine_transform(imgarray2, 
-                                    m = m, 
-                                    filter = "bilinear")
-imgarray_scale <- scale_transform(imgarray_affine, 
-                                  output.dim = c(200,300),
-                                  filter = "bilinear")
-imgarray_trans <- translate_transform(imgarray_scale,
-                                      shift = c(100,20))
+imgarray_affine <- affine(imgarray2, 
+                          m = m, 
+                          filter = "bilinear")
+imgarray_scale <- scale(imgarray_affine, 
+                        output.dim = c(200,300),
+                        filter = "bilinear")
+imgarray_trans <- translation(imgarray_scale,
+                              shift = c(100,20))
 ```
 
 # Use cases

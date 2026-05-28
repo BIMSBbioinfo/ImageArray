@@ -28,7 +28,8 @@ Imports:
   Rarr,
   ZarrArray,
   magick,
-  tools
+  tools,
+  BiocGenerics
 Suggests: 
   testthat (>= 3.0.0),
   knitr,
