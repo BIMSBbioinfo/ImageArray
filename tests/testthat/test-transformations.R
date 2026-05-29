@@ -122,6 +122,48 @@ for(ni in names(img_list)) {
     )
   })
   
+  # test a lot of angles
+  basic_angles <- c(90, 180, 270)
+  for(angle in c(seq(2, 360, 20), basic_angles)){
+    
+    # test a lot of angles
+    test_that(paste0("rotate (", angle, " degrees) transformation for ", ni), {
+      
+      # TODO: tiff rotation is ill-defined for 90, 180, 270
+      skip_if(ni == "tiff", message = "90, 180, 270 angles wont work for tiff")
+      
+      imgarray_rotate <- ImageArray::rotate(imgarray, angle = angle)
+      
+      # check seed
+      expect_s4_class(imgarray_rotate, "ImageArray")
+      for(i in seq_along(imgarray_rotate)){
+        if(!angle %in% basic_angles)
+          expect_s4_class(imgarray_rotate[[i]]@seed, "DelayedAffineSeed")
+        expect_s4_class(imgarray_rotate[[i]]@seed, "DelayedUnaryOp")
+      }
+      
+      # check affine
+      img <- realize(imgarray)
+      img_rotate <- test_rotate(img, axes(imgarray), angle)
+      if(!angle %in% basic_angles)
+        dimnames(img_rotate) <- vector("list", length(dim(img_rotate)))
+      expect_equal(
+        realize(imgarray_rotate[[1]]), 
+        img_rotate
+      )
+      
+      # check subset
+      index <- list(x = 100:140, y = 230:240)
+      imgarray_subset <- crop(imgarray_rotate, index = index)
+      img_subset <- test_subset(img_rotate, axes(imgarray), index)
+      dimnames(img_subset) <- NULL
+      expect_equal(
+        realize(imgarray_subset[[1]]), 
+        img_subset
+      )
+    })
+  }
+  
   test_that(paste0("sequence transformation for ", ni), {
     m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
     output.dim <- c(200,300)

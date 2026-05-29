@@ -14,7 +14,6 @@
 #'  }
 #' }
 #' @param drop ignored
-#' @param angle value between 0 and 360 for degrees to rotate
 #' @param brightness the brightness of the new image in percentage, e.g. 120
 #' @param perm perm
 #' @param index a named or unnamed list of indices for cropping/subsetting the
@@ -30,14 +29,8 @@
 #' @aliases
 #' [[,ImageArray,numeric-method
 #' [[<-,ImageArray,numeric-method
-#' rotate
-#' rotate,ImageArray-method
 #' crop
 #' crop,ImageArray-method
-#' flip
-#' flip,ImageArray-method
-#' flop
-#' flop,ImageArray-method
 #' negate
 #' negate,ImageArray-method
 #' modulate
@@ -52,6 +45,8 @@
 #' as.raster,ImageArray-method
 #' path
 #' path,ImageArray-method
+#' extent
+#' extent,ImageArray-method
 #'
 #' @examples
 #' # get image
@@ -89,6 +84,9 @@
 #'
 #' # realize
 #' imgarray <- realize(imgarray)
+#' 
+#' # extent
+#' extent(imgarray)
 NULL
 
 #' @describeIn ImageArray-methods subset and crop
@@ -99,12 +97,6 @@ setMethod(
   f = "[",
   signature = c("ImageArray"),
   function(x, i, j, ..., drop = FALSE) {
-    if (missing(x)) {
-      stop("'x' is missing")
-    }
-    if (!.isTRUEorFALSE(drop)) {
-      stop("'drop' must be TRUE or FALSE")
-    }
     Nindex <- S4Arrays:::extract_Nindex_from_syscall(sys.call(), parent.frame())
     crop(x, index = Nindex)
   }

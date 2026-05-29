@@ -11,6 +11,18 @@ test_affine <- function(img, axes, m){
   aperm(img_affine, perm = order(ap))
 }
 
+# test affine
+test_rotate <- function(img, axes, angle){
+  actual_dim <- dim(img)
+  xy <- match(c("x", "y"), axes)
+  ap <- c(xy, setdiff(seq_along(actual_dim), xy))
+  img <- aperm(img, perm = ap)
+  img <- EBImage::Image(img)
+  img_rotate <- EBImage::rotate(EBImage::Image(img), angle = angle)
+  img_rotate <- EBImage::imageData(img_rotate)
+  aperm(img_rotate, perm = order(ap))
+}
+
 # test scale
 test_scale <- function(img, axes, output.dim){
   actual_dim <- dim(img)

@@ -1,3 +1,6 @@
+#' @importFrom EBImage rotate flip flop
+NULL
+
 #' @name trans
 #' @rdname trans
 #' @title Transformations
@@ -9,7 +12,8 @@
 #' when realized into the memory
 #' 
 #' @param x an ImageArray object
-#' @inheritParams EBImage::affine
+#' @inheritParams EBImage::affine 
+#' @inheritParams EBImage::rotate
 #' @param axes axes
 #' @param shift translation shift parameter, a vector of length 2
 #' @param ... arguments passed to other methods
@@ -282,24 +286,31 @@ setMethod("type", "DelayedTransformSeed", function(x) {
        y = c(bboxmin[2], bboxmax[2]))
 }
 
-.get_bbox_from_extent <- function(ext,m){
+.get_bbox_from_extent <- function(ext,m, adjust = TRUE){
   px <- as.matrix(expand.grid(ext[[1]], ext[[2]]))
-  transformed <- sweep(px %*% m[seq_len(2),], 2L, m[3,], "+")
+  transformed <- px %*% m[seq_len(2),]
+  if(adjust) transformed <- sweep(transformed, 2L, m[3,], "+")
   bbox.min <- apply(transformed, 2L, min)
   bbox.max <- apply(transformed, 2L, max)
   list(min = bbox.min, max = bbox.max)
 }
 
-.adjust_affine_matrix <- function(dim, axes, m){
+.adjust_affine_matrix <- function(dim, axes, m, output.dim = NULL){
   dim <- setNames(dim, axes)
   bbox <- .get_bbox_from_extent(
     list(x = c(0,dim[["x"]]), y = c(0,dim[["y"]])),
     m = m)
   m[3, ] <- m[3,] - bbox$min
   newdim <- bbox$max - bbox$min
-  dim[c("x", "y")] <- newdim
+  if(!is.null(output.dim)) newdim <- output.dim
+  dim[c("x", "y")] <- as.integer(round(newdim))
   names(dim) <- NULL
   list(m=m, output.dim=dim)
+}
+
+.check_outputdim <- function(output.dim){
+  if (length(output.dim) != 2L || !is.numeric(output.dim)) 
+    stop("'output.dim' must be a numeric vector of length 2")
 }
 
 # extract_array ####
@@ -398,7 +409,7 @@ setMethod(
 # extent ####
 
 #' @export
-#' @rdname trans
+#' @describeIn ImageArray-methods extent
 setMethod("extent", "ImageArray", function(x){
   dims <- c("x", "y")
   xy <- match(dims, axes(x))
@@ -416,7 +427,7 @@ setMethod("extent", "DelayedArray", function(x){
 setMethod("extent", "DelayedAffineSeed", function(x){
   ext <- extent(x@seed)
   xy <- match(c("x", "y"), x@axes)
-  bbox <- .get_bbox_from_extent(ext[xy], x@m)
+  bbox <- .get_bbox_from_extent(ext[xy], x@m, adjust = FALSE)
   ext[xy] <- .get_extent_from_box(bbox$min, bbox$max)
   ext
 })
@@ -445,12 +456,13 @@ setMethod("extent", "Array", function(x){
 .affine_transform <- function(x,
                               m,
                               axes = NULL,
+                              output.dim = NULL,
                               filter = c("bilinear", "none"),
                               bg.col = "black",
                               antialias = TRUE) {
   filter <- match.arg(filter)
   
-  adj <- .adjust_affine_matrix(dim(x), axes, m)
+  adj <- .adjust_affine_matrix(dim(x), axes, m, output.dim)
   output.dim <- as.integer(adj$output.dim)
   m <- adj$m
   dn <- vector("list", length(output.dim))
@@ -471,23 +483,31 @@ setMethod("extent", "Array", function(x){
 }
 
 #' @export
-#' @rdname trans
+#' @describeIn trans affine transformation
 setMethod("affine", 
           signature = "ImageArray", 
           function(x,
                    m,
                    axes = NULL,
+                   output.dim,
                    filter = c("bilinear", "none"),
                    bg.col = "black",
                    antialias = TRUE) {
             ax <- axes(x)
+            .check_outputdim(output.dim)
             for (i in seq_along(x@levels)) {
               scl <- rep(2^(i - 1), 2)
               m <- solve(diag(c(scl, 1))) %*% m %*% diag(scl) 
+              if(!missing(output.dim)){
+                cur_output.dim <- output.dim / 2^(i - 1) 
+              } else {
+                cur_output.dim <- NULL
+              }
               x[[i]] <- affine(
                 x[[i]],
                 m = m,
                 axes = ax,
+                output.dim = cur_output.dim,
                 filter = filter,
                 bg.col = bg.col,
                 antialias = antialias
@@ -524,7 +544,7 @@ setMethod("affine", signature = "DelayedArray", .affine_transform)
 }
 
 #' @export
-#' @rdname trans
+#' @describeIn trans scale transformation
 setMethod("scale", 
           signature = "ImageArray", 
           function(x,
@@ -536,6 +556,7 @@ setMethod("scale",
                    antialias = TRUE, 
                    ...) {
             ax <- axes(x)
+            .check_outputdim(output.dim)
             for (i in seq_along(x@levels)) {
               cur_output.dim <- output.dim / 2^(i - 1)
               x[[i]] <- scale(
@@ -558,17 +579,10 @@ setMethod("scale", signature = "DelayedArray", .scale_transform)
 
 .rotate_transform <- function(x,
                               angle,
-                              output.dim = NULL,
-                              output.origin = c(0,0),
                               axes = NULL,
                               filter = c("bilinear", "none"),
                               bg.col = "black",
                               antialias = TRUE) {
-  if (length(angle) != 1L || !is.numeric(angle)) 
-    stop("'angle' must be a number")
-  if (!missing(output.dim)) 
-    if (length(output.dim) != 2L || !is.numeric(output.dim)) 
-      stop("'output.dim' must be a numeric vector of length 2")
   if ((angle%%90) == 0) 
     filter <- "none"
   angle <- angle * pi/180
@@ -576,30 +590,19 @@ setMethod("scale", signature = "DelayedArray", .scale_transform)
   d <- dim(x)[xy]
   cos <- cos(angle)
   sin <- sin(angle)
-  if (missing(output.origin)) {
-    newdim <- c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
-                  d[2] * abs(cos))
-    offset <- c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
-                 max(0, -sin) + d[2] * max(0, -cos))
-    if (missing(output.dim)) 
-      output.dim <- newdim
-    else offset <- offset + (output.dim - newdim)/2
-  }
-  else {
-    if (length(output.origin) != 2L || !is.numeric(output.origin)) 
-      stop("'output.origin' must be a numeric vector of length 2")
-    offset <- c(output.origin[1L] * (1 - cos) + output.origin[2L] * 
-                 sin, output.origin[2L] * (1 - cos) - output.origin[1L] * 
-                 sin)
-  }
+  output.dim = c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
+               d[2] * abs(cos))
+  offset = c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
+               max(0, -sin) + d[2] * max(0, -cos))
   m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
               3L, 2L)
   affine(x,
-                   m,
-                   axes = axes,
-                   filter = filter,
-                   bg.col = bg.col,
-                   antialias = antialias)
+         m,
+         axes = axes, 
+         output.dim = output.dim,
+         filter = filter,
+         bg.col = bg.col,
+         antialias = antialias)
 }
 
 #' @keywords internal
@@ -629,7 +632,7 @@ setMethod("rotate_transform", signature = "DelayedArray", .rotate_transform)
 }
 
 #' @export
-#' @rdname trans
+#' @describeIn trans translation transformation
 setMethod("translation", 
           signature = "ImageArray", 
           function(x,
@@ -649,3 +652,94 @@ setMethod("translation",
 #' @keywords internal
 #' @noRd
 setMethod("translation", signature = "DelayedArray", .translate_transform)
+
+# other transformations ####
+
+#' @describeIn trans rotation transformation
+#' @export
+setMethod("rotate", 
+          signature = "ImageArray", 
+          function(x, 
+                   angle, 
+                   filter = c("bilinear", "none"),
+                   bg.col = "black",
+                   antialias = TRUE) {
+  
+  # check angle
+  if (length(angle) != 1L || !is.numeric(angle)) 
+    stop("'angle' must be a numeric")
+  
+  # this negates if angle is negative  
+  angle <- angle %% 360
+
+  # validate rotation
+  if (!angle %in% c(0, 90, 180, 270, 360)) {
+    return(
+      .rotate_transform(x, 
+                      angle = angle, 
+                      axes = axes(x), 
+                      filter = filter,
+                      bg.col = bg.col,
+                      antialias = antialias)
+    )
+  }
+  
+  # check dimensions
+  .check_dim(x)
+  dim_img <- dim(x[[1]])
+  ax <- axes(x)
+  
+  # array perm.
+  if (angle %in% c(90, 270)) {
+    cur_perm <- .swap(
+      seq_along(dim_img),
+      which(ax == "x"),
+      which(ax == "y")
+    )
+    x <- aperm(x, perm = cur_perm)
+  }
+  
+  # flop
+  if (angle %in% c(90, 180)) {
+    x <- flop(x)
+  }
+  
+  # flip
+  if (angle %in% c(180, 270)) {
+    x <- flip(x)
+  }
+  
+  # return
+  x
+})
+
+#' @importFrom stats setNames
+#' @noRd
+.flipflop <- function(object, direction = "x") {
+  ax <- axes(object)
+  
+  # check dim
+  .check_dim(object)
+  
+  # flip all
+  for (i in seq_along(object@levels)) {
+    img <- object[[i]]
+    dim_img <- stats::setNames(dim(img), ax)
+    cur_ind <- stats::setNames(lapply(dim_img, seq_len), ax)
+    cur_ind[[direction]] <- rev(cur_ind[[direction]])
+    object[[i]] <- .subset_array(object[[i]], cur_ind, drop = FALSE)
+  }
+  object
+}
+
+#' @describeIn trans vertical flipping 
+#' @export
+setMethod("flip", signature = "ImageArray", function(x) {
+  .flipflop(x, direction = "y")
+})
+
+#' @describeIn trans horizontal flipping
+#' @export
+setMethod("flop", signature = "ImageArray", function(x) {
+  .flipflop(x, direction = "x")
+})

@@ -286,6 +286,14 @@ imgarray_trans <- translation(imgarray_scale,
                               shift = c(100,20))
 ```
 
+## rotate transformation
+
+```{r sequence}
+imgarray_rotate <- rotate(imgarray, 
+                          angle = 45, 
+                          filter = "bilinear")
+```
+
 # Use cases
 
 The delayed pyramid scheme introduced by `ImageArray` objects can also 
