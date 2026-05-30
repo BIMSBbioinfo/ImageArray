@@ -1,8 +1,7 @@
 Package: ImageArray
 Type: Package
 Title: A framework for on-disk and in-memory image arrays
-Version: 1.1.1
-Date: 2026-01-20
+Version: 1.1.2
 Authors@R: 
 	person("Artür", "Manukyan", 
 		     role=c("aut", "cre", "fnd"),
@@ -13,7 +12,6 @@ Description: ImageArray provides a framework for on-disk and in-memory image
              Zarr and life sciences image file formats (OME Bio-Formats).
 License: MIT + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 biocViews: Software, Visualization
 Depends: 
   R (>= 4.5.0),
@@ -42,3 +40,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/BIMSBbioinfo/ImageArray
 BugReports: https://github.com/BIMSBbioinfo/ImageArray/issues
+Config/roxygen2/version: 8.0.0
