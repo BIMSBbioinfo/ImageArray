@@ -6,8 +6,8 @@
 \alias{translation}
 \alias{affine}
 \alias{affine,ImageArray-method}
-\alias{scale,ImageArray-method}
 \alias{rotate,ImageArray-method}
+\alias{scale,ImageArray-method}
 \alias{translation,ImageArray-method}
 \alias{flip,ImageArray-method}
 \alias{flop,ImageArray-method}
@@ -23,6 +23,14 @@
   antialias = TRUE
 )
 
+\S4method{rotate}{ImageArray}(
+  x,
+  angle,
+  filter = c("bilinear", "none"),
+  bg.col = "black",
+  antialias = TRUE
+)
+
 \S4method{scale}{ImageArray}(
   x,
   output.dim = NULL,
@@ -32,14 +40,6 @@
   bg.col = "black",
   antialias = TRUE,
   ...
-)
-
-\S4method{rotate}{ImageArray}(
-  x,
-  angle,
-  filter = c("bilinear", "none"),
-  bg.col = "black",
-  antialias = TRUE
 )
 
 \S4method{translation}{ImageArray}(x, shift = c(0, 0), axes = NULL)
@@ -65,11 +65,11 @@
 
 \item{antialias}{If \code{TRUE}, perform bilinear sampling at image edges using \code{bg.col}.}
 
+\item{angle}{A numeric specifying the image rotation angle in degrees.}
+
 \item{output.origin}{A vector of 2 numbers indicating the output coordinates of the origin in pixels.}
 
 \item{...}{arguments passed to other methods}
-
-\item{angle}{A numeric specifying the image rotation angle in degrees.}
 
 \item{shift}{translation shift parameter, a vector of length 2}
 }
@@ -85,9 +85,9 @@ when realized into the memory
 \itemize{
 \item \code{affine(ImageArray)}: affine transformation
 
-\item \code{scale(ImageArray)}: scale transformation
-
 \item \code{rotate(ImageArray)}: rotation transformation
+
+\item \code{scale(ImageArray)}: scale transformation
 
 \item \code{translation(ImageArray)}: translation transformation
 

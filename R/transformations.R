@@ -527,6 +527,52 @@ setMethod("affine",
             x
           })
 
+
+.rotate_transform <- function(x,
+                              angle,
+                              axes = NULL,
+                              filter = c("bilinear", "none"),
+                              bg.col = "black",
+                              antialias = TRUE) {
+  if ((angle%%90) == 0) 
+    filter <- "none"
+  angle <- angle * pi/180
+  xy <- match(c("x", "y"), axes)
+  d <- dim(x)[xy]
+  cos <- cos(angle)
+  sin <- sin(angle)
+  output.dim = c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
+                   d[2] * abs(cos))
+  offset = c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
+               max(0, -sin) + d[2] * max(0, -cos))
+  m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
+              3L, 2L)
+  affine(x,
+         m,
+         axes = axes, 
+         output.dim = output.dim,
+         filter = filter,
+         bg.col = bg.col,
+         antialias = antialias)
+}
+
+#' @describeIn trans rotation transformation
+#' @export
+setMethod("rotate",
+          signature = "ImageArray",
+          function(x,
+                   angle,
+                   filter = c("bilinear", "none"),
+                   bg.col = "black",
+                   antialias = TRUE) {
+            .rotate_transform(x,
+                              angle = angle,
+                              axes = axes(x),
+                              filter = filter,
+                              bg.col = bg.col,
+                              antialias = antialias)
+          })
+
 .scale_transform <- function(x,
                              output.dim = NULL,
                              output.origin = c(0,0),
@@ -577,92 +623,6 @@ setMethod("scale",
                 ...
               )
             }
-            x
-          })
-
-.rotate_transform <- function(x,
-                              angle,
-                              axes = NULL,
-                              filter = c("bilinear", "none"),
-                              bg.col = "black",
-                              antialias = TRUE) {
-  if ((angle%%90) == 0) 
-    filter <- "none"
-  angle <- angle * pi/180
-  xy <- match(c("x", "y"), axes)
-  d <- dim(x)[xy]
-  cos <- cos(angle)
-  sin <- sin(angle)
-  output.dim = c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
-               d[2] * abs(cos))
-  offset = c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
-               max(0, -sin) + d[2] * max(0, -cos))
-  m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
-              3L, 2L)
-  affine(x,
-         m,
-         axes = axes, 
-         output.dim = output.dim,
-         filter = filter,
-         bg.col = bg.col,
-         antialias = antialias)
-}
-
-#' @describeIn trans rotation transformation
-#' @export
-setMethod("rotate", 
-          signature = "ImageArray", 
-          function(x, 
-                   angle, 
-                   filter = c("bilinear", "none"),
-                   bg.col = "black",
-                   antialias = TRUE) {
-            
-            # check angle
-            if (length(angle) != 1L || !is.numeric(angle)) 
-              stop("'angle' must be a numeric")
-            
-            # this negates if angle is negative  
-            angle <- angle %% 360
-            
-            # validate rotation
-            if (!angle %in% c(0, 90, 180, 270, 360)) {
-              return(
-                .rotate_transform(x, 
-                                  angle = angle, 
-                                  axes = axes(x), 
-                                  filter = filter,
-                                  bg.col = bg.col,
-                                  antialias = antialias)
-              )
-            }
-            
-            # check dimensions
-            .check_dim(x)
-            dim_img <- dim(x[[1]])
-            ax <- axes(x)
-            
-            # array perm.
-            if (angle %in% c(90, 270)) {
-              cur_perm <- .swap(
-                seq_along(dim_img),
-                which(ax == "x"),
-                which(ax == "y")
-              )
-              x <- aperm(x, perm = cur_perm)
-            }
-            
-            # flop
-            if (angle %in% c(90, 180)) {
-              x <- flop(x)
-            }
-            
-            # flip
-            if (angle %in% c(180, 270)) {
-              x <- flip(x)
-            }
-            
-            # return
             x
           })
 

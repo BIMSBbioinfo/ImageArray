@@ -33,6 +33,8 @@ for(ni in names(img_list)) {
   xy <- match(c("x", "y"), axes(imgarray))
   
   test_that(paste0("translation transformation for ", ni), {
+    
+    # translate image
     shift <- c(100,20)
     imgarray_trans <- translation(imgarray, shift = shift)
     
@@ -51,6 +53,8 @@ for(ni in names(img_list)) {
   })
   
   test_that(paste0("scaling transformation for ", ni), {
+
+    # scale image
     output.dim <- c(200,300)
     imgarray_scale <- scale(imgarray, output.dim = output.dim)
     
@@ -92,6 +96,8 @@ for(ni in names(img_list)) {
   })
   
   test_that(paste0("affine transformation for ", ni), {
+    
+    # affine transform image
     m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
     imgarray_affine <- affine(imgarray, m = m)
     
@@ -123,30 +129,25 @@ for(ni in names(img_list)) {
   })
   
   # test a lot of angles
-  basic_angles <- c(90, 180, 270)
-  for(angle in c(seq(2, 360, 20), basic_angles)){
+  for(angle in c(seq(2, 360, 20), c(90, 180, 270))){
     
     # test a lot of angles
     test_that(paste0("rotate (", angle, " degrees) transformation for ", ni), {
       
-      # TODO: tiff rotation is ill-defined for 90, 180, 270
-      skip_if(ni == "tiff", message = "90, 180, 270 angles wont work for tiff")
-      
+      # rotate image
       imgarray_rotate <- ImageArray::rotate(imgarray, angle = angle)
       
       # check seed
       expect_s4_class(imgarray_rotate, "ImageArray")
       for(i in seq_along(imgarray_rotate)){
-        if(!angle %in% basic_angles)
-          expect_s4_class(imgarray_rotate[[i]]@seed, "DelayedAffineSeed")
+        expect_s4_class(imgarray_rotate[[i]]@seed, "DelayedAffineSeed")
         expect_s4_class(imgarray_rotate[[i]]@seed, "DelayedUnaryOp")
       }
       
       # check affine
       img <- realize(imgarray)
       img_rotate <- test_rotate(img, axes(imgarray), angle)
-      if(!angle %in% basic_angles)
-        dimnames(img_rotate) <- vector("list", length(dim(img_rotate)))
+      dimnames(img_rotate) <- vector("list", length(dim(img_rotate)))
       expect_equal(
         realize(imgarray_rotate[[1]]), 
         img_rotate
