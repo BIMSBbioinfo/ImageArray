@@ -19,6 +19,50 @@ NULL
 #' @param ... arguments passed to other methods
 #' 
 #' @returns an \code{ImageArray} object.
+#' 
+#' @examples
+#' ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
+#' package = "ImageArray")
+#' read.metadata(ome.tiff.file)
+#' 
+#' # define ImageArray object
+#' imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+#' 
+#' # translate image
+#' imgarray_trans <- translation(imgarray, shift = c(100,20))
+#' 
+#' # scale image
+#' imgarray_scale <- scale(imgarray, output.dim = c(200,300),
+#'                         filter = "bilinear")
+#' imgarray_scale                        
+#' 
+#' # rotate image
+#' imgarray_rotate <- rotate(imgarray, angle = 45, filter = "bilinear")
+#' imgarray_rotate
+#' 
+#' # image with affine transformation
+#' m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+#' imgarray_affine <- affine(imgarray, 
+#'                           m = m,
+#'                           filter = "bilinear")
+#' imgarray_affine
+#' 
+#' # get extent of the transformed image
+#' extent(imgarray_affine)
+#' 
+#' # a sequence of transformations
+#' m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+#' imgarray_trans <- affine(imgarray, 
+#'                          m = m, 
+#'                          filter = "bilinear")
+#' imgarray_trans
+#' 
+#' imgarray_trans <- scale(imgarray_trans, 
+#'                         output.dim = c(200,300),
+#'                         filter = "bilinear")
+#' imgarray_trans <- translation(imgarray_trans,
+#'                               shift = c(100,20))
+#'                               
 NULL
 
 ####
@@ -119,13 +163,13 @@ setMethod("type", "DelayedTransformSeed", function(x) {
   )
 }
 
-.spatial_perm <- function(ndim, axes) {
+.axes_perm <- function(ndim, axes) {
   xy <- match(c("x", "y"), axes)
   c(xy, setdiff(seq_len(ndim), xy))
 }
 
-.spatial_first <- function(a, axes) {
-  p <- .spatial_perm(length(dim(a)), axes)
+.axes_first <- function(a, axes) {
+  p <- .axes_perm(length(dim(a)), axes)
   
   if (identical(p, seq_along(p))) {
     a
@@ -134,9 +178,9 @@ setMethod("type", "DelayedTransformSeed", function(x) {
   }
 }
 
-.spatial_back <- function(a, axes) {
+.axes_back <- function(a, axes) {
   ndim <- length(dim(a))
-  p <- .spatial_perm(ndim, axes)
+  p <- .axes_perm(ndim, axes)
   inv <- order(p)
   
   if (identical(inv, seq_len(ndim))) {
@@ -265,7 +309,7 @@ setMethod("type", "DelayedTransformSeed", function(x) {
   full_index <- vector("list", length(dim(x@seed)))
   
   arr <- S4Arrays::extract_array(x@seed, full_index)
-  arr <- .spatial_first(arr, x@axes)
+  arr <- .axes_first(arr, x@axes)
   
   xy <- match(c("x", "y"), x@axes)
 
@@ -278,7 +322,7 @@ setMethod("type", "DelayedTransformSeed", function(x) {
     antialias = x@antialias
   )
 
-  .spatial_back(as.array(out), x@axes)
+  .axes_back(as.array(out), x@axes)
 }
 
 .get_extent_from_box <- function(bboxmin, bboxmax) {
@@ -362,7 +406,7 @@ setMethod(
     source_index[[ydim]] <- bbox$y
     
     source_patch <- S4Arrays::extract_array(x@seed, source_index)
-    source_patch <- .spatial_first(source_patch, x@axes)
+    source_patch <- .axes_first(source_patch, x@axes)
     
     m_local <- .localize_affine(
       m = x@m,
@@ -379,7 +423,7 @@ setMethod(
       antialias = x@antialias
     )
     
-    rendered <- .spatial_back(as.array(rendered), x@axes)
+    rendered <- .axes_back(as.array(rendered), x@axes)
     
     local_index <- vector("list", length(out_dim))
     local_index[[xdim]] <- match(out_x, out_x_window)

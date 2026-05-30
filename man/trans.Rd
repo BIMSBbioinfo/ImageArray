@@ -96,3 +96,47 @@ when realized into the memory
 \item \code{flop(ImageArray)}: horizontal flipping
 
 }}
+\examples{
+ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
+package = "ImageArray")
+read.metadata(ome.tiff.file)
+
+# define ImageArray object
+imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+
+# translate image
+imgarray_trans <- translation(imgarray, shift = c(100,20))
+
+# scale image
+imgarray_scale <- scale(imgarray, output.dim = c(200,300),
+                        filter = "bilinear")
+imgarray_scale                        
+
+# rotate image
+imgarray_rotate <- rotate(imgarray, angle = 45, filter = "bilinear")
+imgarray_rotate
+
+# image with affine transformation
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_affine <- affine(imgarray, 
+                          m = m,
+                          filter = "bilinear")
+imgarray_affine
+
+# get extent of the transformed image
+extent(imgarray_affine)
+
+# a sequence of transformations
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_trans <- affine(imgarray, 
+                         m = m, 
+                         filter = "bilinear")
+imgarray_trans
+
+imgarray_trans <- scale(imgarray_trans, 
+                        output.dim = c(200,300),
+                        filter = "bilinear")
+imgarray_trans <- translation(imgarray_trans,
+                              shift = c(100,20))
+                              
+}
