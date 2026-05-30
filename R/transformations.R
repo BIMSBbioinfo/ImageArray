@@ -309,8 +309,9 @@ setMethod("type", "DelayedTransformSeed", function(x) {
 }
 
 .check_outputdim <- function(output.dim){
-  if (length(output.dim) != 2L || !is.numeric(output.dim)) 
-    stop("'output.dim' must be a numeric vector of length 2")
+  if(!is.null(output.dim))
+    if (length(output.dim) != 2L || !is.numeric(output.dim)) 
+      stop("'output.dim' must be a numeric vector of length 2")
 }
 
 # extract_array ####
@@ -499,21 +500,21 @@ setMethod("affine",
           function(x,
                    m,
                    axes = NULL,
-                   output.dim,
+                   output.dim = NULL,
                    filter = c("bilinear", "none"),
                    bg.col = "black",
                    antialias = TRUE) {
             ax <- axes(x)
-            .check_outputdim(output.dim)
             for (i in seq_along(x@levels)) {
               scl <- rep(2^(i - 1), 2)
               m <- solve(diag(c(scl, 1))) %*% m %*% diag(scl) 
-              if(!missing(output.dim)){
+              if(!is.null(output.dim)){
                 cur_output.dim <- output.dim / 2^(i - 1) 
               } else {
-                cur_output.dim <- NULL
+                cur_output.dim <- output.dim
               }
-              x[[i]] <- affine(
+              .check_outputdim(cur_output.dim)
+              x[[i]] <- .affine_transform(
                 x[[i]],
                 m = m,
                 axes = ax,
@@ -525,10 +526,6 @@ setMethod("affine",
             }
             x
           })
-
-#' @keywords internal
-#' @noRd
-setMethod("affine", signature = "DelayedArray", .affine_transform)
 
 .scale_transform <- function(x,
                              output.dim = NULL,
@@ -569,7 +566,7 @@ setMethod("scale",
             .check_outputdim(output.dim)
             for (i in seq_along(x@levels)) {
               cur_output.dim <- output.dim / 2^(i - 1)
-              x[[i]] <- scale(
+              x[[i]] <- .scale_transform(
                 x[[i]],
                 output.dim = cur_output.dim,
                 output.origin = output.origin,
@@ -582,10 +579,6 @@ setMethod("scale",
             }
             x
           })
-
-#' @keywords internal
-#' @noRd
-setMethod("scale", signature = "DelayedArray", .scale_transform)
 
 .rotate_transform <- function(x,
                               angle,
@@ -615,9 +608,63 @@ setMethod("scale", signature = "DelayedArray", .scale_transform)
          antialias = antialias)
 }
 
-#' @keywords internal
-#' @noRd
-setMethod("rotate_transform", signature = "DelayedArray", .rotate_transform)
+#' @describeIn trans rotation transformation
+#' @export
+setMethod("rotate", 
+          signature = "ImageArray", 
+          function(x, 
+                   angle, 
+                   filter = c("bilinear", "none"),
+                   bg.col = "black",
+                   antialias = TRUE) {
+            
+            # check angle
+            if (length(angle) != 1L || !is.numeric(angle)) 
+              stop("'angle' must be a numeric")
+            
+            # this negates if angle is negative  
+            angle <- angle %% 360
+            
+            # validate rotation
+            if (!angle %in% c(0, 90, 180, 270, 360)) {
+              return(
+                .rotate_transform(x, 
+                                  angle = angle, 
+                                  axes = axes(x), 
+                                  filter = filter,
+                                  bg.col = bg.col,
+                                  antialias = antialias)
+              )
+            }
+            
+            # check dimensions
+            .check_dim(x)
+            dim_img <- dim(x[[1]])
+            ax <- axes(x)
+            
+            # array perm.
+            if (angle %in% c(90, 270)) {
+              cur_perm <- .swap(
+                seq_along(dim_img),
+                which(ax == "x"),
+                which(ax == "y")
+              )
+              x <- aperm(x, perm = cur_perm)
+            }
+            
+            # flop
+            if (angle %in% c(90, 180)) {
+              x <- flop(x)
+            }
+            
+            # flip
+            if (angle %in% c(180, 270)) {
+              x <- flip(x)
+            }
+            
+            # return
+            x
+          })
 
 .translate_transform <- function(x,
                                  shift = c(0,0),
@@ -650,7 +697,7 @@ setMethod("translation",
                    axes = NULL) {
             ax <- axes(x)
             for (i in seq_along(x@levels)) {
-              x[[i]] <- translation(
+              x[[i]] <- .translate_transform(
                 x[[i]],
                 shift = shift,
                 axes = ax
@@ -659,69 +706,7 @@ setMethod("translation",
             x
           })
 
-#' @keywords internal
-#' @noRd
-setMethod("translation", signature = "DelayedArray", .translate_transform)
-
 # other transformations ####
-
-#' @describeIn trans rotation transformation
-#' @export
-setMethod("rotate", 
-          signature = "ImageArray", 
-          function(x, 
-                   angle, 
-                   filter = c("bilinear", "none"),
-                   bg.col = "black",
-                   antialias = TRUE) {
-  
-  # check angle
-  if (length(angle) != 1L || !is.numeric(angle)) 
-    stop("'angle' must be a numeric")
-  
-  # this negates if angle is negative  
-  angle <- angle %% 360
-
-  # validate rotation
-  if (!angle %in% c(0, 90, 180, 270, 360)) {
-    return(
-      .rotate_transform(x, 
-                      angle = angle, 
-                      axes = axes(x), 
-                      filter = filter,
-                      bg.col = bg.col,
-                      antialias = antialias)
-    )
-  }
-  
-  # check dimensions
-  .check_dim(x)
-  dim_img <- dim(x[[1]])
-  ax <- axes(x)
-  
-  # array perm.
-  if (angle %in% c(90, 270)) {
-    cur_perm <- .swap(
-      seq_along(dim_img),
-      which(ax == "x"),
-      which(ax == "y")
-    )
-    x <- aperm(x, perm = cur_perm)
-  }
-  
-  # flop
-  if (angle %in% c(90, 180)) {
-    x <- flop(x)
-  }
-  
-  # flip
-  if (angle %in% c(180, 270)) {
-    x <- flip(x)
-  }
-  
-  # return
-  x
-})
 
 #' @importFrom stats setNames
 #' @noRd

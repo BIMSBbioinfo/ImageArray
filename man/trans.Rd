@@ -7,8 +7,8 @@
 \alias{affine}
 \alias{affine,ImageArray-method}
 \alias{scale,ImageArray-method}
-\alias{translation,ImageArray-method}
 \alias{rotate,ImageArray-method}
+\alias{translation,ImageArray-method}
 \alias{flip,ImageArray-method}
 \alias{flop,ImageArray-method}
 \title{Transformations}
@@ -17,7 +17,7 @@
   x,
   m,
   axes = NULL,
-  output.dim,
+  output.dim = NULL,
   filter = c("bilinear", "none"),
   bg.col = "black",
   antialias = TRUE
@@ -34,8 +34,6 @@
   ...
 )
 
-\S4method{translation}{ImageArray}(x, shift = c(0, 0), axes = NULL)
-
 \S4method{rotate}{ImageArray}(
   x,
   angle,
@@ -43,6 +41,8 @@
   bg.col = "black",
   antialias = TRUE
 )
+
+\S4method{translation}{ImageArray}(x, shift = c(0, 0), axes = NULL)
 
 \S4method{flip}{ImageArray}(x)
 
@@ -69,9 +69,9 @@
 
 \item{...}{arguments passed to other methods}
 
-\item{shift}{translation shift parameter, a vector of length 2}
-
 \item{angle}{A numeric specifying the image rotation angle in degrees.}
+
+\item{shift}{translation shift parameter, a vector of length 2}
 }
 \value{
 an \code{ImageArray} object.
@@ -87,9 +87,9 @@ when realized into the memory
 
 \item \code{scale(ImageArray)}: scale transformation
 
-\item \code{translation(ImageArray)}: translation transformation
-
 \item \code{rotate(ImageArray)}: rotation transformation
+
+\item \code{translation(ImageArray)}: translation transformation
 
 \item \code{flip(ImageArray)}: vertical flipping
 

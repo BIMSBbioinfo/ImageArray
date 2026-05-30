@@ -304,7 +304,7 @@ imgarray_trans <- translation(imgarray_scale,
 
 ## rotate transformation
 
-```{r sequence}
+```{r rotate_lazy}
 imgarray_rotate <- rotate(imgarray, 
                           angle = 45, 
                           filter = "bilinear")
