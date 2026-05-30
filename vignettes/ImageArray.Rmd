@@ -223,13 +223,15 @@ plot(bfa.raster)
 dim(bfa.raster)
 ```
 
-`r Biocpkg("ImageArray")` can also read OME-TIFF files with all five dimensions (XYZCT)
-available in the OME (Open Microscopy Environment) specifications. RBioFormats would drop
-any of the dimensions with only one level. 
+`r Biocpkg("ImageArray")` can also read images with all five dimensions (XYZCT)
+available in the OME (Open Microscopy Environment) specifications. 
+See OME specifications webpage for more information [here](https://docs.openmicroscopy.org/ome-model/6.2.2/ome-tiff/specification.html#dimensionorder).
 
 ```{r 4d, out.width="50%"}
 ome.tiff.file <- system.file("extdata", "4D-series.ome.tiff",
                              package = "ImageArray")
+
+# read metadata
 read.metadata(ome.tiff.file, proprietary.metadata = TRUE, filter.metadata = TRUE)
 
 # define ImageArray object
