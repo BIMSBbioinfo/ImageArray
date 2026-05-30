@@ -20,13 +20,13 @@ test_that("bfarray object", {
   
   # create array
   bfa <- BFArray(img.file, series = 1, resolution = 2)
-  expect_equal(dim(bfa), c(256, 256, 1))
+  expect_equal(dim(bfa), c(256, 256))
   bfa <- BFArray(img.file, series = 1, resolution = 1)
-  expect_equal(dim(bfa), c(512, 512, 1))
+  expect_equal(dim(bfa), c(512, 512))
 
   # methods
-  bfa2 <- aperm(bfa, c(2, 1, 3))
-  expect_equal(bfa2[1, 2, 1], bfa[2, 1, 1])
+  bfa2 <- aperm(bfa, c(2, 1))
+  expect_equal(bfa2[1, 2], bfa[2, 1])
 
   # construct imagearray
   img <- createImageArray(img.file, series = 1, resolution = 1:2)
@@ -37,9 +37,9 @@ test_that("bfarray object", {
 
   # single channel modulate
   img_modulated <- modulate(img, brightness = 200)
-  orig <- realize(img[1:10, 1:10,]) * 2
+  orig <- realize(img[1:10, 1:10]) * 2
   orig[orig > 1] <- 1
-  newmat <- realize(img_modulated[1:10, 1:10,])
+  newmat <- realize(img_modulated[1:10, 1:10])
   expect_equal(orig, newmat)
 })
 
