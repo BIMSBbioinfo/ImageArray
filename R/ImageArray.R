@@ -139,11 +139,27 @@ setMethod(
 )
 
 #' @importFrom S4Vectors coolcat
+#' @importFrom DelayedArray seed
 #' @noRd
 setMethod(
   f = "show",
   signature = c("ImageArray"),
   definition = function(object) {
+    # Determine backend label from the first level array
+    first_level <- object[[1]]
+    backend_class <- class(first_level)
+
+    backend_label <- if (backend_class == "BFArray") {
+      # For BFArray, include the file extension (e.g. ".ome.tiff")
+      tryCatch({
+        fp <- DelayedArray::seed(first_level)@filepath
+        ext <- sub("^[^.]*", "", basename(fp))
+        if (nzchar(ext)) paste0(backend_class, ", ", ext) else backend_class
+      }, error = function(e) backend_class)
+    } else {
+      backend_class
+    }
+
     cat(
       class(x = object),
       "Object",
@@ -152,6 +168,7 @@ setMethod(
         paste(axes(object), collapse = ","),
         ")"
       ),
+      paste0("[", backend_label, "]"),
       "\n"
     )
     scales <- sprintf(
