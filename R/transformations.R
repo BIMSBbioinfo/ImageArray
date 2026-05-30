@@ -443,13 +443,23 @@ setMethod("extent", "DelayedTranslateSeed", function(x){
   ext
 })
 
-#' @keywords internal
-#' @noRd
-setMethod("extent", "Array", function(x){
+.extent_array <- function(x) {
   lapply(dim(x), \(.){
     c(0,.)
   })
-})
+}
+
+#' @keywords internal
+#' @noRd
+setMethod("extent", "Array", .extent_array)
+
+#' @keywords internal
+#' @noRd
+setMethod("extent", "array", .extent_array)
+
+#' @keywords internal
+#' @noRd
+setMethod("extent", "matrix", .extent_array)
 
 # lazy transformations ####
 
