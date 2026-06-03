@@ -2,7 +2,7 @@
 
 <!-- README.md is generated from README.qmd. Please edit that file -->
 
-# ImageArray
+# ImageArray <a href="https://github.com/BIMSBbioinfo/ImageArray"><img src="man/figures/logo.png" alt="imagearray website" align="right" height="180"/></a>
 
 **ImageArray** provides a unified, memory‑efficient way to work with
 pyramidal and non‑pyramidal images using the `DelayedArray` package in
