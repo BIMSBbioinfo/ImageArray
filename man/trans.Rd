@@ -98,7 +98,10 @@ when realized into the memory
 }}
 \examples{
 ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
-package = "ImageArray")
+                             package = "ImageArray")
+                             
+if (!requireNamespace("RBioFormats"))
+  BiocManager::install("RBioFormats")
 read.metadata(ome.tiff.file)
 
 # define ImageArray object
@@ -115,6 +118,7 @@ imgarray_scale
 # rotate image
 imgarray_rotate <- rotate(imgarray, angle = 45, filter = "bilinear")
 imgarray_rotate
+plot(as.raster(imgarray_rotate))
 
 # image with affine transformation
 m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
@@ -122,6 +126,7 @@ imgarray_affine <- affine(imgarray,
                           m = m,
                           filter = "bilinear")
 imgarray_affine
+plot(as.raster(imgarray_affine))
 
 # get extent of the transformed image
 extent(imgarray_affine)
