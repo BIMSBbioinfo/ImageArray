@@ -232,7 +232,8 @@ ome.tiff.file <- system.file("extdata", "4D-series.ome.tiff",
                              package = "ImageArray")
 
 # read metadata
-read.metadata(ome.tiff.file, proprietary.metadata = TRUE, filter.metadata = TRUE)
+read.metadata(ome.tiff.file, proprietary.metadata = TRUE, 
+              filter.metadata = TRUE)
 
 # define ImageArray object
 imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1)

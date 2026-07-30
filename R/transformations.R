@@ -26,6 +26,7 @@ NULL
 #'                              
 #' if (!requireNamespace("RBioFormats"))
 #'   BiocManager::install("RBioFormats")
+#' library(RBioFormats)
 #' read.metadata(ome.tiff.file)
 #' 
 #' # define ImageArray object
