@@ -242,6 +242,14 @@ imgarray
 
 # Image Transformations
 
+`r Biocpkg("ImageArray")` provides image transformation functions that operate 
+consistently across all pyramid levels. *Translation*, *scaling*, *rotation*, 
+and *affine* transformations are recorded as lazy operations rather than being 
+immediately applied to the underlying image data array. This keeps the object 
+memory-efficient while still allowing complex image-processing workflows 
+to be expressed clearly, and most importantly, it allows cropping operations
+efficient since transformations are only applied to queried image slices.
+
 ```{r delayed}
 ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
                              package = "ImageArray")
@@ -252,63 +260,79 @@ imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 imgarray
 ```
 
-```{r delayed_magick}
-# make random EBImage image
-f <- system.file("images", "sample.png", package = "EBImage")
-
-# read image with magick
-img <- image_read(f)
-
-# create image array
-output_h5 <- tempfile(fileext = ".h5")
-imgarray2 <- writeImageArray(img, output = output_h5)
-imgarray2
-```
-
 ## translation 
 
+Translation transformation will not alter the pixel dimensionality of the 
+image, but will change the physical space that the image occupies. You can 
+view the physical space that the image spans using the `extent` function.
+
 ```{r translation}
-imgarray_trans <- translation(imgarray2,
+imgarray_trans <- translation(imgarray,
                               shift = c(100,20))
+imgarray_trans
+extent(imgarray_trans)
 ```
 
-## scale transformation
+## scale 
+
+Scale transformations are performed providing the dimensionality of the new
+scaled `ImageArray` object, i.e. `output.dim` for `x` and `y` dimensions. 
+Here, we use the `filter` argument to determine the method of interpolation 
+of pixel intensity values after transformations. Regular images typically 
+use `bilinear` whereas `none` invokes a nearest neighbor interpolation 
+approach more suitable for image masks.
 
 ```{r scale}
-imgarray_scale <- scale(imgarray2, 
+imgarray_scale <- scale(imgarray, 
                         output.dim = c(200,300),
                         filter = "bilinear")
+imgarray_scale
 ```
 
-## affine transformation
+## rotate 
 
-```{r affine}
-m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
-imgarray_affine <- affine(imgarray2, 
-                          m = m,
-                          filter = "bilinear")
-```
-
-## sequence transformation
-
-```{r sequence}
-m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
-imgarray_affine <- affine(imgarray2, 
-                          m = m, 
-                          filter = "bilinear")
-imgarray_scale <- scale(imgarray_affine, 
-                        output.dim = c(200,300),
-                        filter = "bilinear")
-imgarray_trans <- translation(imgarray_scale,
-                              shift = c(100,20))
-```
-
-## rotate transformation
+Rotation requires specifying the `angle` that rotates the image in clock-wise
+fashion and `filter` for interpolation method. 
 
 ```{r rotate_lazy}
 imgarray_rotate <- rotate(imgarray, 
                           angle = 45, 
                           filter = "bilinear")
+imgarray_rotate
+plot(as.raster(imgarray_rotate))
+```
+
+## affine 
+
+Affine transformations are also available where users have to provide a `2x3` 
+matrix that applies an affine transformation on `x` and `y` axes.
+
+```{r affine}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_affine <- affine(imgarray, 
+                          m = m,
+                          filter = "bilinear")
+imgarray_affine
+plot(as.raster(imgarray_affine))
+```
+
+## sequence
+
+Because the transformations are delayed, they can also be performed in sequence.
+This is useful when an image must first be then rotated, scaled and finally 
+shifted onto a new coordinate system.
+
+```{r sequence}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray <- affine(imgarray, 
+                   m = m, 
+                   filter = "bilinear")
+imgarray <- scale(imgarray,
+                  output.dim = c(200,300),
+                  filter = "bilinear")
+imgarray <- translation(imgarray,
+                        shift = c(100,20))
+plot(as.raster(imgarray))
 ```
 
 # Use cases
