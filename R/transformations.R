@@ -23,9 +23,7 @@ NULL
 #' @examples
 #' ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
 #'                              package = "ImageArray")
-#'                              
-#' if (!requireNamespace("RBioFormats"))
-#'   BiocManager::install("RBioFormats")
+#'                            
 #' library(RBioFormats)
 #' read.metadata(ome.tiff.file)
 #' 
@@ -457,7 +455,7 @@ setMethod(
     S4Arrays::extract_array(x@seed, index)
   })
 
-# extent ####
+# extent methods####
 
 #' @export
 #' @describeIn ImageArray-methods extent

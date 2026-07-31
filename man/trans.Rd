@@ -99,9 +99,7 @@ when realized into the memory
 \examples{
 ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
                              package = "ImageArray")
-                             
-if (!requireNamespace("RBioFormats"))
-  BiocManager::install("RBioFormats")
+                           
 library(RBioFormats)
 read.metadata(ome.tiff.file)
 
