@@ -7,6 +7,7 @@ setGeneric("modulate", function(object, ...) standardGeneric("modulate"))
 setGeneric("meta", function(object, ...) standardGeneric("meta"))
 setGeneric("axes", function(object, ...) standardGeneric("axes"))
 setGeneric("extent", \(x, ...) standardGeneric("extent"))
+setGeneric(".extent", \(x, ...) standardGeneric(".extent"))
 
 # generics from EBImage
 setGeneric("rotate")

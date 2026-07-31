@@ -178,6 +178,9 @@ imgarray[[2]]
 dim(imgarray)
 length(imgarray)
 
+# extent
+extent(imgarray)
+
 # manipulate images
 imgarray <- crop(imgarray, ind = list(100:200, 100:200))
 imgarray <- crop(imgarray, ind = list(x = 10:20, y = 10:20))
@@ -198,7 +201,4 @@ imgarray_raster <- as.raster(imgarray)
 
 # realize
 imgarray <- realize(imgarray)
-
-# extent
-extent(imgarray)
 }

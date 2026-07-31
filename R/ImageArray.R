@@ -63,6 +63,9 @@
 #' # dimensions and length
 #' dim(imgarray)
 #' length(imgarray)
+#' 
+#' # extent
+#' extent(imgarray)
 #'
 #' # manipulate images
 #' imgarray <- crop(imgarray, ind = list(100:200, 100:200))
@@ -84,9 +87,6 @@
 #'
 #' # realize
 #' imgarray <- realize(imgarray)
-#' 
-#' # extent
-#' extent(imgarray)
 NULL
 
 #' @describeIn ImageArray-methods subset and crop

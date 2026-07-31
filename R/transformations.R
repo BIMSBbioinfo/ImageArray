@@ -109,24 +109,29 @@ setClass(
 setClassUnion("DelayedTransformSeed", 
               c("DelayedAffineSeed", "DelayedTranslateSeed"))
 
+#' @name trans_seed
+#' @rdname trans_seed
+#' @title DelayedTransformSeed Methods
+#' @description
+#' Methods for Delayed Transformations seeds
+#' 
+#' @param x DelayedTransformSeed object
+NULL
 
-#' @noRd
-#' @rdname trans
-#' @keywords internal
+#' @export
+#' @rdname trans_seed
 setMethod("dim", "DelayedTransformSeed", function(x) {
   x@dim
 })
 
-#' @noRd
-#' @rdname trans
-#' @keywords internal
+#' @export
+#' @rdname trans_seed
 setMethod("dimnames", "DelayedTransformSeed", function(x) {
   x@dimnames
 })
 
-#' @noRd
-#' @rdname trans
-#' @keywords internal
+#' @export
+#' @rdname trans_seed
 setMethod("type", "DelayedTransformSeed", function(x) {
   DelayedArray::type(x@seed)
 })
@@ -462,29 +467,26 @@ setMethod(
 setMethod("extent", "ImageArray", function(x){
   dims <- c("x", "y")
   xy <- match(dims, axes(x))
-  setNames(extent(x[[1]])[xy], dims)
+  setNames(.extent(x[[1]])[xy], dims)
 })
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "DelayedArray", function(x){
-  extent(x@seed)
+setMethod(".extent", "DelayedArray", function(x){
+  .extent(x@seed)
 })
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "DelayedAffineSeed", function(x){
-  ext <- extent(x@seed)
+setMethod(".extent", "DelayedAffineSeed", function(x){
+  ext <- .extent(x@seed)
   xy <- match(c("x", "y"), x@axes)
   bbox <- .get_bbox_from_extent(ext[xy], x@m, adjust = FALSE)
   ext[xy] <- .get_extent_from_box(bbox$min, bbox$max)
   ext
 })
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "DelayedTranslateSeed", function(x){
-  ext <- extent(x@seed)
+setMethod(".extent", "DelayedTranslateSeed", function(x){
+  ext <- .extent(x@seed)
   xy <- match(c("x", "y"), x@axes)
   ext[xy] <- Map(\(i,j){
     i+j
@@ -498,17 +500,14 @@ setMethod("extent", "DelayedTranslateSeed", function(x){
   })
 }
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "Array", .extent_array)
+setMethod(".extent", "Array", .extent_array)
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "array", .extent_array)
+setMethod(".extent", "array", .extent_array)
 
-#' @keywords internal
 #' @noRd
-setMethod("extent", "matrix", .extent_array)
+setMethod(".extent", "matrix", .extent_array)
 
 # lazy transformations ####
 
