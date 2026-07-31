@@ -120,18 +120,21 @@ NULL
 
 #' @export
 #' @rdname trans_seed
+#' @returns dimension lengths of DelayedTransformSeed object
 setMethod("dim", "DelayedTransformSeed", function(x) {
   x@dim
 })
 
 #' @export
 #' @rdname trans_seed
+#' @returns dimension names of DelayedTransformSeed object
 setMethod("dimnames", "DelayedTransformSeed", function(x) {
   x@dimnames
 })
 
 #' @export
 #' @rdname trans_seed
+#' @returns type of the data of DelayedTransformSeed object
 setMethod("type", "DelayedTransformSeed", function(x) {
   DelayedArray::type(x@seed)
 })

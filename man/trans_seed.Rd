@@ -16,6 +16,13 @@
 \arguments{
 \item{x}{DelayedTransformSeed object}
 }
+\value{
+dimension lengths of DelayedTransformSeed object
+
+dimension names of DelayedTransformSeed object
+
+type of the data of DelayedTransformSeed object
+}
 \description{
 Methods for Delayed Transformations seeds
 }
