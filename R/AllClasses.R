@@ -1,8 +1,20 @@
+#' @importFrom S4Vectors SimpleList
+#' @importFrom methods setClass setClassUnion setOldClass
+NULL
+
+setClassUnion("matrix_array_Array", 
+              c("matrix", "array", "Array"))
+
+.ImageList <- setClass(
+  Class="ImageList",
+  contains="SimpleList",
+  prototype=prototype(elementType="matrix_array_Array"))
+
 .ImageArray <- setClass(
   Class = "ImageArray",
   slots = c(
     meta = "list",
-    levels = "list"
+    levels = "ImageList"
   )
 )
 

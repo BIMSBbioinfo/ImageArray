@@ -184,7 +184,11 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 #' @export
 #' @return An ImageArray object
 ImageArray <- function(meta, levels) {
-  S4Vectors::new2("ImageArray", meta = meta, levels = levels)
+  S4Vectors::new2(
+    "ImageArray", 
+    meta = meta, 
+    levels = S4Vectors:::new_SimpleList_from_list("ImageList", levels)
+  )
 }
 
 #' createBFArray
