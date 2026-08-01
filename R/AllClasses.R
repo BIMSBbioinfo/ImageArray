@@ -1,5 +1,5 @@
 #' @importFrom S4Vectors SimpleList
-#' @importFrom methods setClass setClassUnion setOldClass
+#' @importFrom methods setClass setClassUnion
 #' @importClassesFrom S4Arrays Array
 NULL
 
