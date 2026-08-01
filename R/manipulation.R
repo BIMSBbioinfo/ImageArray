@@ -1,43 +1,3 @@
-#' @importFrom EBImage rotate flip flop
-NULL
-
-#' @describeIn ImageArray-methods rotate image array to 90, 180, 270 degrees
-#' @export
-setMethod("rotate", signature = "ImageArray", function(x, angle) {
-  # validate rotation
-  if (!angle %in% c(0, 90, 180, 270, 360)) {
-    stop("Only rotations of 0,90,180,270,360 degrees are supported!")
-  }
-
-  # check dimensions
-  .check_dim(x)
-  dim_img <- dim(x[[1]])
-  ax <- axes(x)
-
-  # array perm.
-  if (angle %in% c(90, 270)) {
-    cur_perm <- .swap(
-      seq_along(dim_img),
-      which(ax == "x"),
-      which(ax == "y")
-    )
-    x <- aperm(x, perm = cur_perm)
-  }
-
-  # flop
-  if (angle %in% c(90, 180)) {
-    x <- flop(x)
-  }
-
-  # flip
-  if (angle %in% c(180, 270)) {
-    x <- flip(x)
-  }
-
-  # return
-  x
-})
-
 #' @describeIn ImageArray-methods permute image
 #' @exportMethod aperm
 setMethod("aperm", signature = "ImageArray", function(a, perm) {
@@ -72,37 +32,6 @@ setMethod("modulate", signature = "ImageArray", function(object, brightness) {
     object[[i]] <- tmp
   }
   object
-})
-
-#' @importFrom stats setNames
-#' @noRd
-.flipflop <- function(object, direction = "x") {
-  ax <- axes(object)
-
-  # check dim
-  .check_dim(object)
-
-  # flip all
-  for (i in seq_along(object@levels)) {
-    img <- object[[i]]
-    dim_img <- stats::setNames(dim(img), ax)
-    cur_ind <- stats::setNames(lapply(dim_img, seq_len), ax)
-    cur_ind[[direction]] <- rev(cur_ind[[direction]])
-    object[[i]] <- .subset_array(object[[i]], cur_ind, drop = FALSE)
-  }
-  object
-}
-
-#' @describeIn ImageArray-methods vertical flipping image
-#' @export
-setMethod("flip", signature = "ImageArray", function(x) {
-  .flipflop(x, direction = "y")
-})
-
-#' @describeIn ImageArray-methods horizontal flipping image
-#' @export
-setMethod("flop", signature = "ImageArray", function(x) {
-  .flipflop(x, direction = "x")
 })
 
 #' @describeIn ImageArray-methods cropping image

@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 inst/.DS_Store
-*.Rproj
+.DS_Store
+man/.DS_Store

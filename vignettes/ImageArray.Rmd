@@ -232,11 +232,107 @@ ome.tiff.file <- system.file("extdata", "4D-series.ome.tiff",
                              package = "ImageArray")
 
 # read metadata
-read.metadata(ome.tiff.file, proprietary.metadata = TRUE, filter.metadata = TRUE)
+read.metadata(ome.tiff.file, proprietary.metadata = TRUE, 
+              filter.metadata = TRUE)
 
 # define ImageArray object
 imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1)
 imgarray
+```
+
+# Image Transformations
+
+`r Biocpkg("ImageArray")` provides image transformation functions that operate 
+consistently across all pyramid levels. *Translation*, *scaling*, *rotation*, 
+and *affine* transformations are recorded as lazy operations rather than being 
+immediately applied to the underlying image data array. This keeps the object 
+memory-efficient while still allowing complex image-processing workflows 
+to be expressed clearly, and most importantly, it allows cropping operations
+efficient since transformations are only applied to queried image slices.
+
+```{r delayed}
+ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
+                             package = "ImageArray")
+read.metadata(ome.tiff.file)
+
+# define ImageArray object
+imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+imgarray
+```
+
+## translation 
+
+Translation transformation will not alter the pixel dimensionality of the 
+image, but will change the physical space that the image occupies. You can 
+view the physical space that the image spans using the `extent` function.
+
+```{r translation}
+imgarray_trans <- translation(imgarray,
+                              shift = c(100,20))
+imgarray_trans
+extent(imgarray_trans)
+```
+
+## scale 
+
+Scale transformations are performed providing the dimensionality of the new
+scaled `ImageArray` object, i.e. `output.dim` for `x` and `y` dimensions. 
+Here, we use the `filter` argument to determine the method of interpolation 
+of pixel intensity values after transformations. Regular images typically 
+use `bilinear` whereas `none` invokes a nearest neighbor interpolation 
+approach more suitable for image masks.
+
+```{r scale}
+imgarray_scale <- scale(imgarray, 
+                        output.dim = c(200,300),
+                        filter = "bilinear")
+imgarray_scale
+```
+
+## rotate 
+
+Rotation requires specifying the `angle` that rotates the image in clock-wise
+fashion and `filter` for interpolation method. 
+
+```{r rotate_lazy}
+imgarray_rotate <- rotate(imgarray, 
+                          angle = 45, 
+                          filter = "bilinear")
+imgarray_rotate
+plot(as.raster(imgarray_rotate))
+```
+
+## affine 
+
+Affine transformations are also available where users have to provide a `2x3` 
+matrix that applies an affine transformation on `x` and `y` axes.
+
+```{r affine}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray_affine <- affine(imgarray, 
+                          m = m,
+                          filter = "bilinear")
+imgarray_affine
+plot(as.raster(imgarray_affine))
+```
+
+## sequence
+
+Because the transformations are delayed, they can also be performed in sequence.
+This is useful when an image must first be then rotated, scaled and finally 
+shifted onto a new coordinate system.
+
+```{r sequence}
+m <- matrix(c(1, -.5, 128, 0, 1, 0), nrow=3, ncol=2)
+imgarray <- affine(imgarray, 
+                   m = m, 
+                   filter = "bilinear")
+imgarray <- scale(imgarray,
+                  output.dim = c(200,300),
+                  filter = "bilinear")
+imgarray <- translation(imgarray,
+                        shift = c(100,20))
+plot(as.raster(imgarray))
 ```
 
 # Use cases
