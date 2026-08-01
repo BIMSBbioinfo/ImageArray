@@ -25,7 +25,7 @@ consistently across all pyramid levels without loading arrays in memory.
 - **Pyramids:** multi‑resolution stacks of, e.g., from HDF5, Zarr or OME‑TIFF (Bio-formats) images as a single object.
 - **Interoperability:** plays nicely with image classes across R/Bioconductor, such as **EBImage** or **magick**. 
 - **Delayed operations:** NGFF transformations (scale, translation, affine), and imaging operations (negation, cropping, slicing) – performed lazily, without loading in memory, via `DelayedArray`.
-- **Backends:** HDF5 and Zarr on‑disk storage using **HDF5Array** and **Rarr** packages.
+- **Backends:** HDF5 and Zarr on‑disk storage using **HDF5Array** and **ZarrArray** packages.
 
 ## What are image pyramids?
 

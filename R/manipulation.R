@@ -83,8 +83,4 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
 
 #' @describeIn ImageArray-methods get axes metadata of the ImageArray object
 #' @exportMethod axes
-setMethod("axes", "ImageArray", function(object) meta(object)[["axes"]])
-
-#' @describeIn ImageArray-methods get metadata of the ImageArray object
-#' @exportMethod meta
-setMethod("meta", "ImageArray", function(object) object@meta)
+setMethod("axes", "ImageArray", function(object) object@axes)

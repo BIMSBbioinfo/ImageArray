@@ -24,7 +24,6 @@ Imports:
   DelayedArray, 
   rhdf5,
   HDF5Array,
-  Rarr,
   ZarrArray,
   magick,
   tools,

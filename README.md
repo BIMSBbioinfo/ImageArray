@@ -19,7 +19,7 @@ in memory.
   affine), and imaging operations (negation, cropping, slicing) –
   performed lazily, without loading in memory, via `DelayedArray`.
 - **Backends:** HDF5 and Zarr on‑disk storage using **HDF5Array** and
-  **Rarr** packages.
+  **ZarrArray** packages.
 
 ## What are image pyramids?
 
@@ -54,7 +54,6 @@ images) and the path to the on-disk h5 file or zarr store.
 ``` r
 library(ImageArray)
 #> Loading required package: EBImage
-#> Warning: multiple methods tables found for 'transform'
 #> 
 #> Attaching package: 'ImageArray'
 #> The following object is masked from 'package:EBImage':

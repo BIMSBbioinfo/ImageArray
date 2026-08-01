@@ -1,7 +1,6 @@
 library(magick)
-library(rhdf5)
 library(HDF5Array)
-library(Rarr)
+library(ZarrArray)
 
 output_h5 <- tempfile(fileext = ".h5")
 output_zarr <- tempfile(fileext = ".zarr")

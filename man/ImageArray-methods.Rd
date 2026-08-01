@@ -45,7 +45,7 @@
 
 \S4method{length}{ImageArray}(x)
 
-ImageArray(meta, levels)
+ImageArray(levels, axes)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -60,8 +60,6 @@ ImageArray(meta, levels)
 \S4method{crop}{ImageArray}(object, index)
 
 \S4method{axes}{ImageArray}(object)
-
-\S4method{meta}{ImageArray}(object)
 
 \S4method{extent}{ImageArray}(x)
 
@@ -87,10 +85,11 @@ ImageArray(meta, levels)
 
 \item{drop}{ignored}
 
-\item{meta}{the metadata of the ImageArray object.}
-
 \item{levels}{levels of the pyramid image, typically a vector of integers
 starting with 1}
+
+\item{axes}{a character vector of axes names for images. 
+Should be a subset of c("c", "y", "x", "z", "t")}
 
 \item{level}{level}
 
@@ -150,8 +149,6 @@ A function for creating objects of ImageArray class
 \item \code{crop(ImageArray)}: cropping image
 
 \item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
-
-\item \code{meta(ImageArray)}: get metadata of the ImageArray object
 
 \item \code{extent(ImageArray)}: extent
 

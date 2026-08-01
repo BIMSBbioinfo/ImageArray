@@ -1,12 +1,4 @@
 .validate_ImageArray <- function(object) {
-  # check axes
-  if (!"axes" %in% names(meta(object))) {
-    stop(
-      "'axes' should not be provided in the metadata of the ",
-       "ImageArray object, as they are stored separately in ",
-       "the 'axes' slot."
-    )
-  }
 
   # check default axes
   if (!all(axes(object) %in% .AXES)) {

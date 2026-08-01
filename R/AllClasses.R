@@ -1,5 +1,6 @@
 #' @importFrom S4Vectors SimpleList
 #' @importFrom methods setClass setClassUnion setOldClass
+#' @importClassesFrom S4Arrays Array
 NULL
 
 setClassUnion("matrix_array_Array", 
@@ -13,8 +14,8 @@ setClassUnion("matrix_array_Array",
 .ImageArray <- setClass(
   Class = "ImageArray",
   slots = c(
-    meta = "list",
-    levels = "ImageList"
+    levels = "ImageList",
+    axes = "character"
   )
 )
 
