@@ -17,5 +17,3 @@ setGeneric("flop")
 # transformations
 setGeneric("affine", \(x, ...) standardGeneric("affine"))
 setGeneric("translation", \(x, ...) standardGeneric("translation"))
-setGeneric("rotate_transform",
-           \(x, ...) standardGeneric("rotate_transform"))
