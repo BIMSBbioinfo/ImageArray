@@ -15,7 +15,8 @@ setClassUnion("matrix_array_Array",
   Class = "ImageArray",
   slots = c(
     levels = "ImageList",
-    axes = "character"
+    axes = "character",
+    scales = "list"
   )
 )
 

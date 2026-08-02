@@ -30,6 +30,7 @@
 \alias{ImageArray}
 \alias{as.raster.ImageArray}
 \alias{aperm,ImageArray-method}
+\alias{scales,ImageArray-method}
 \alias{path<-,ImageArray-method}
 \title{Methods for ImageArray}
 \usage{
@@ -45,7 +46,7 @@
 
 \S4method{length}{ImageArray}(x)
 
-ImageArray(levels, axes)
+ImageArray(levels, axes, scales = NULL)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -60,6 +61,8 @@ ImageArray(levels, axes)
 \S4method{crop}{ImageArray}(object, index)
 
 \S4method{axes}{ImageArray}(object)
+
+\S4method{scales}{ImageArray}(object)
 
 \S4method{extent}{ImageArray}(x)
 
@@ -90,6 +93,11 @@ starting with 1}
 
 \item{axes}{a character vector of axes names for images. 
 Should be a subset of c("c", "y", "x", "z", "t")}
+
+\item{scales}{a list of named numeric vectors where names are a
+subset of \code{axes} and values are associated with scales 
+of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+information.}
 
 \item{level}{level}
 
@@ -149,6 +157,8 @@ A function for creating objects of ImageArray class
 \item \code{crop(ImageArray)}: cropping image
 
 \item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
+
+\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{extent(ImageArray)}: extent
 

@@ -84,28 +84,6 @@ is.sequential <- function(x) {
   all(abs(diff(x)) == 1)
 }
 
-#' @noRd
-.subset_array <- function(x, idx, drop = FALSE) {
-  d <- dim(x)
-  if (is.null(d)) {
-    stop("x must be an array or matrix.")
-  }
-  if (length(idx) > length(d)) {
-    stop("Too many index dimensions provided.")
-  }
-
-  # pad missing dimensions with full slices
-  while (length(idx) < length(d)) {
-    idx[[length(idx) + 1]] <- seq_len(d[length(idx) + 1])
-  }
-
-  if (length(idx) == 3) {
-    x[idx[[1]], idx[[2]], idx[[3]], drop = drop]
-  } else {
-    x[idx[[1]], idx[[2]], drop = drop]
-  }
-}
-
 .swap <- function(x, i, j) {
   x[c(i, j)] <- x[c(j, i)]
   x
@@ -225,3 +203,7 @@ is.sequential <- function(x) {
 #' @keywords internal
 #' @noRd
 .AXES <- c("c", "y", "x", "z", "t")
+
+#' @keywords internal
+#' @noRd
+.TEMPLATE_SCALES <- c(c = 1, y = 1, x = 1, z = 1, t = 0.1)

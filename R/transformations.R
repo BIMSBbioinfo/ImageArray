@@ -591,9 +591,9 @@ setMethod("affine",
   d <- dim(x)[xy]
   cos <- cos(angle)
   sin <- sin(angle)
-  output.dim = c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
+  output.dim <- c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
                    d[2] * abs(cos))
-  offset = c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
+  offset <- c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
                max(0, -sin) + d[2] * max(0, -cos))
   m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
               3L, 2L)

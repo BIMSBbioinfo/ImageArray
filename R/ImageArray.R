@@ -1,3 +1,7 @@
+####
+# Methods ####
+####
+
 #' Methods for ImageArray
 #'
 #' Methods for \code{ImageArray} objects
@@ -180,17 +184,31 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 #'  starting with 1
 #' @eval paste0("@param axes a character vector of axes names for images. 
 #'  Should be a subset of ", deparse(.AXES))
+#' @param scales a list of named numeric vectors where names are a  
+#'  subset of \code{axes} and values are associated with scales 
+#'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+#'  information.
 #'
 #' @importFrom S4Vectors new2
 #' @export
 #' @return An ImageArray object
-ImageArray <- function(levels, axes) {
+ImageArray <- function(levels, axes, scales = NULL) {
+  if(is.null(scales)){
+    scales <- .get_scales(levels, axes)
+  } else {
+    axes <- .get_axes(scales)
+  }
   S4Vectors::new2(
     "ImageArray", 
     levels = S4Vectors:::new_SimpleList_from_list("ImageList", levels),
-    axes = axes
+    axes = axes,
+    scales = scales
   )
 }
+
+####
+# Create/Write ####
+####
 
 #' createBFArray
 #'
@@ -356,7 +374,7 @@ createEBImageArray <- function(
   .check_dim(image)
 
   # get axes, EBImage accepts XY or XYC
-  axes = c("x", "y", "c")
+  axes <- c("x", "y", "c")
   if (verbose) .img_create_msg(dim_image, 1)
   img_perm <- if (length(dim(image)) == 2) c(1, 2) else c(1, 2, 3)
   axes <- axes[img_perm]
@@ -666,4 +684,37 @@ writeImageArray <- function(
 
   # return
   image_list
+}
+
+####
+# Utils ####
+####
+
+#' @keywords internal
+#' @noRd
+.get_scales <- function(levels, axes){
+  msg <- "axes length does not match the dim of the array"
+  d <- dim(levels[[1]])
+  if(length(d) != length(axes)) stop(msg)
+  first_dim <- setNames(dim(levels[[1]]),axes)
+  scaled_axes <- intersect(c("x", "y", "z"), axes)
+  lapply(levels, \(.){
+    d <- dim(.)
+    if(length(d) != length(axes)) stop(msg)
+    d <- setNames(d, axes)
+    sc <- .TEMPLATE_SCALES[axes]
+    sc[scaled_axes] <- d[scaled_axes]/first_dim[scaled_axes]
+    sc
+  })
+}
+
+#' @keywords internal
+#' @noRd
+.get_axes <- function(scales){
+  if(!is.list(scales))
+    stop("scales must be a list!")
+  for(sc in scales){
+    if(is.null(names(sc))) stop("Each vector in scales should be named!")
+  }
+  names(scales[[1]])
 }

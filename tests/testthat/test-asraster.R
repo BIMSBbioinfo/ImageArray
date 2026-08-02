@@ -22,3 +22,19 @@ test_that("levels", {
   expect_error(as.raster(imgarray, level = 3))
   expect_error(as.raster(imgarray, level = 1.2))
 })
+
+test_that("levels (3D)", {
+  
+  # create ImageArray
+  imgarray <- ImageArray(levels = list(array(1:2197, dim = c(13,13,13)),
+                                       array(1:1000, dim = c(10,10,10)),
+                                       array(1:216, dim = c(6,6,6))),
+                         axes = c("x", "y", "z"))
+  
+  # check as.raster
+  expect_error(
+    imgarray_vis <- as.raster(imgarray), 
+    regexp = "Rasterable ImageArray objects should have axes"
+  )
+})
+
