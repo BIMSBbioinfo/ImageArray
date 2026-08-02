@@ -24,20 +24,23 @@
 \alias{extent}
 \alias{extent,ImageArray-method}
 \alias{[,ImageArray,ANY,ANY,ANY-method}
+\alias{[[,ImageArray,numeric,ANY-method}
+\alias{[[<-,ImageArray,numeric,ANY,ANY-method}
 \alias{dim,ImageArray-method}
 \alias{type,ImageArray-method}
 \alias{length,ImageArray-method}
 \alias{ImageArray}
 \alias{as.raster.ImageArray}
 \alias{aperm,ImageArray-method}
+\alias{scales,ImageArray-method}
 \alias{path<-,ImageArray-method}
 \title{Methods for ImageArray}
 \usage{
 \S4method{[}{ImageArray,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
-\S4method{[[}{ImageArray,numeric}(x, i)
+\S4method{[[}{ImageArray,numeric,ANY}(x, i)
 
-\S4method{[[}{ImageArray,numeric}(x, i, j, ...) <- value
+\S4method{[[}{ImageArray,numeric,ANY,ANY}(x, i, j, ...) <- value
 
 \S4method{dim}{ImageArray}(x)
 
@@ -45,7 +48,7 @@
 
 \S4method{length}{ImageArray}(x)
 
-ImageArray(meta, levels)
+ImageArray(levels, axes, scales = NULL)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -61,7 +64,7 @@ ImageArray(meta, levels)
 
 \S4method{axes}{ImageArray}(object)
 
-\S4method{meta}{ImageArray}(object)
+\S4method{scales}{ImageArray}(object)
 
 \S4method{extent}{ImageArray}(x)
 
@@ -87,10 +90,16 @@ ImageArray(meta, levels)
 
 \item{drop}{ignored}
 
-\item{meta}{the metadata of the ImageArray object.}
-
 \item{levels}{levels of the pyramid image, typically a vector of integers
 starting with 1}
+
+\item{axes}{a character vector of axes names for images. 
+Should be a subset of c("c", "y", "x", "z", "t")}
+
+\item{scales}{a list of named numeric vectors where names are a
+subset of \code{axes} and values are associated with scales 
+of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+information. When provided, \code{axes} will be overwritten.}
 
 \item{level}{level}
 
@@ -124,7 +133,7 @@ for \code{ImageArray} objects
 \item \code{x[[i}: Layer access
 for \code{ImageArray} objects
 
-\item \code{`[[`(x = ImageArray, i = numeric) <- value}: Layer access
+\item \code{`[[`(x = ImageArray, i = numeric, j = ANY) <- value}: Layer access
 for \code{ImageArray} objects
 
 \item \code{dim(ImageArray)}: dimensions of an ImageArray
@@ -151,7 +160,7 @@ A function for creating objects of ImageArray class
 
 \item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
 
-\item \code{meta(ImageArray)}: get metadata of the ImageArray object
+\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{extent(ImageArray)}: extent
 

@@ -555,11 +555,13 @@ setMethod("affine",
                    bg.col = "black",
                    antialias = TRUE) {
             ax <- axes(x)
+            selected_axes <- c("x", "y")
+            scl <- scales(x)
             for (i in seq_along(x@levels)) {
-              scl <- rep(2^(i - 1), 2)
-              m <- solve(diag(c(scl, 1))) %*% m %*% diag(scl) 
+              sc <- scl[[i]][selected_axes]
+              m <- solve(diag(c(1/sc, 1))) %*% m %*% diag(1/sc) 
               if(!is.null(output.dim)){
-                cur_output.dim <- output.dim / 2^(i - 1) 
+                cur_output.dim <- output.dim * sc
               } else {
                 cur_output.dim <- output.dim
               }
@@ -591,9 +593,9 @@ setMethod("affine",
   d <- dim(x)[xy]
   cos <- cos(angle)
   sin <- sin(angle)
-  output.dim = c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
+  output.dim <- c(d[1] * abs(cos) + d[2] * abs(sin), d[1] * abs(sin) + 
                    d[2] * abs(cos))
-  offset = c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
+  offset <- c(d[1] * max(0, -cos) + d[2] * max(0, sin), d[1] * 
                max(0, -sin) + d[2] * max(0, -cos))
   m <- matrix(c(cos, -sin, offset[1], sin, cos, offset[2]), 
               3L, 2L)
@@ -659,9 +661,12 @@ setMethod("scale",
                    antialias = TRUE, 
                    ...) {
             ax <- axes(x)
+            selected_axes <- c("x", "y")
+            scl <- scales(x)
             .check_outputdim(output.dim)
             for (i in seq_along(x@levels)) {
-              cur_output.dim <- output.dim / 2^(i - 1)
+              sc <- scl[[i]][selected_axes]
+              cur_output.dim <- output.dim * sc
               x[[i]] <- .scale_transform(
                 x[[i]],
                 output.dim = cur_output.dim,

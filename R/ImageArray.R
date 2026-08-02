@@ -1,3 +1,7 @@
+####
+# Methods ####
+####
+
 #' Methods for ImageArray
 #'
 #' Methods for \code{ImageArray} objects
@@ -176,16 +180,35 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 #'
 #' A function for creating objects of ImageArray class
 #'
-#' @param meta the metadata of the ImageArray object.
 #' @param levels levels of the pyramid image, typically a vector of integers
-#' starting with 1
+#'  starting with 1
+#' @eval paste0("@param axes a character vector of axes names for images. 
+#'  Should be a subset of ", deparse(.AXES))
+#' @param scales a list of named numeric vectors where names are a  
+#'  subset of \code{axes} and values are associated with scales 
+#'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+#'  information. When provided, \code{axes} will be overwritten. 
 #'
 #' @importFrom S4Vectors new2
 #' @export
 #' @return An ImageArray object
-ImageArray <- function(meta, levels) {
-  S4Vectors::new2("ImageArray", meta = meta, levels = levels)
+ImageArray <- function(levels, axes, scales = NULL) {
+  if(is.null(scales)){
+    scales <- .get_scales(levels, axes)
+  } else {
+    axes <- .get_axes(scales)
+  }
+  S4Vectors::new2(
+    "ImageArray", 
+    levels = S4Vectors:::new_SimpleList_from_list("ImageList", levels),
+    axes = axes,
+    scales = scales
+  )
 }
+
+####
+# Create/Write ####
+####
 
 #' createBFArray
 #'
@@ -218,8 +241,8 @@ createBFArray <- function(
   image_list <- lapply(resolution, function(res) {
     BFArray(image, series = series, resolution = res)
   })
-  ImageArray(meta = list(axes = tolower(names(image_list[[1]]@seed@shape))), 
-             levels = image_list)
+  ImageArray(levels = image_list, 
+             axes = tolower(names(image_list[[1]]@seed@shape)))
 }
 
 #' createMagickArray
@@ -302,7 +325,7 @@ createMagickArray <- function(
   }
 
   # return
-  ImageArray(meta = list(axes = axes), levels = image_list)
+  ImageArray(levels = image_list, axes = axes)
 }
 
 #' createMagickArray
@@ -351,13 +374,11 @@ createEBImageArray <- function(
   .check_dim(image)
 
   # get axes, EBImage accepts XY or XYC
-  meta <- list(axes = c("x", "y", "c"))
-  if (verbose) {
-    .img_create_msg(dim_image, 1)
-  }
+  axes <- c("x", "y", "c")
+  if (verbose) .img_create_msg(dim_image, 1)
   img_perm <- if (length(dim(image)) == 2) c(1, 2) else c(1, 2, 3)
-  meta[["axes"]] <- meta[["axes"]][img_perm]
-  img_perm <- stats::setNames(img_perm, meta[["axes"]])
+  axes <- axes[img_perm]
+  img_perm <- stats::setNames(img_perm, axes)
   img <- aperm(image, img_perm)
   
   # create image levels
@@ -381,7 +402,7 @@ createEBImageArray <- function(
   }
 
   # return
-  ImageArray(meta = meta, levels = image_list)
+  ImageArray(levels = image_list, axes = axes)
 }
 
 #' createImageArray
@@ -663,4 +684,37 @@ writeImageArray <- function(
 
   # return
   image_list
+}
+
+####
+# Utils ####
+####
+
+#' @keywords internal
+#' @noRd
+.get_scales <- function(levels, axes){
+  msg <- "axes length does not match the dim of the array"
+  d <- dim(levels[[1]])
+  if(length(d) != length(axes)) stop(msg)
+  first_dim <- setNames(dim(levels[[1]]),axes)
+  scaled_axes <- intersect(c("x", "y", "z"), axes)
+  lapply(levels, \(.){
+    d <- dim(.)
+    if(length(d) != length(axes)) stop(msg)
+    d <- setNames(d, axes)
+    sc <- .TEMPLATE_SCALES[axes]
+    sc[scaled_axes] <- d[scaled_axes]/first_dim[scaled_axes]
+    sc
+  })
+}
+
+#' @keywords internal
+#' @noRd
+.get_axes <- function(scales){
+  if(!is.list(scales))
+    stop("scales must be a list!")
+  for(sc in scales){
+    if(is.null(names(sc))) stop("Each vector in scales should be named!")
+  }
+  names(scales[[1]])
 }

@@ -126,7 +126,12 @@ as.raster.ImageArray <- function(
 ) {
   # get axes
   ax <- axes(x)
-  cur_perm <- stats::setNames(seq_along(dim(x)), ax)
+
+  # check dimensions
+  raster_axes <- c("y", "x", "c")
+  if(!all(ax %in% raster_axes))
+    stop("Rasterable ImageArray objects should have axes within ",
+         deparse(raster_axes))
 
   # realize
   rx <- realize(
@@ -136,11 +141,12 @@ as.raster.ImageArray <- function(
     min.pixel.size = min.pixel.size
   )
   d <- length(dim(x))
+  cur_perm <- stats::setNames(seq_along(dim(x)), ax)
   if (d == 2) {
     cur_perm <- stats::setNames(c(cur_perm, 3), c(ax, "c"))
     rx <- array(rx, dim = c(dim(rx), 1))
   }
-  rx <- aperm(rx, perm = cur_perm[c("y", "x", "c")])
+  rx <- aperm(rx, perm = cur_perm[raster_axes])
   rx <- .as_raster_array(
     rx,
     max = if (type(x) == "double") 1 else 255

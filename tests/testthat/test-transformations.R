@@ -1,7 +1,6 @@
 library(magick)
-library(rhdf5)
 library(HDF5Array)
-library(Rarr)
+library(ZarrArray)
 
 # images
 ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",

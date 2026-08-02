@@ -1,5 +1,3 @@
-# library(Rarr)
-
 td <- tempfile(fileext = ".zarr")
 
 test_that("open/create zarr group", {

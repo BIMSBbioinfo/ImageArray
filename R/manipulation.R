@@ -1,3 +1,7 @@
+####
+# Methods ####
+####
+
 #' @describeIn ImageArray-methods permute image
 #' @exportMethod aperm
 setMethod("aperm", signature = "ImageArray", function(a, perm) {
@@ -35,7 +39,6 @@ setMethod("modulate", signature = "ImageArray", function(object, brightness) {
 })
 
 #' @describeIn ImageArray-methods cropping image
-#' @importFrom utils head tail
 #' @importFrom stats setNames
 #' @exportMethod crop
 setMethod("crop", signature = "ImageArray", function(object, index) {
@@ -45,36 +48,39 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
   # get axes
   ax <- axes(object)
   dim_img <- stats::setNames(dim(object), ax)
+  
+  # get scaled axes
+  scaled_axes <- intersect(ax, c("x", "y", "z"))
 
-  # check ind
+  # check indices
   if (missing(index)) {
     index <- vector(mode = "list", length = length(ax))
   }
   index <- .check_indices(index = index, dim = dim_img, ax = ax)
 
   # check sequential
-  check_sequential <- all(vapply(index[c("x", "y")], is.sequential, logical(1)))
-  if (!check_sequential) {
-    stop(
-      "'index' should be a list of sequantial integer 
-                   vectors (hence slice)"
-    )
-  }
+  check_sequential <- all(vapply(index[scaled_axes], is.sequential, logical(1)))
+  if (!check_sequential)
+    stop("'index' should be a list of sequantial integer vectors!")
 
   # crop all images
+  sc <- scales(object)
   for (i in seq_along(object@levels)) {
     img <- object[[i]]
-    dim_img <- stats::setNames(dim(img), ax)[c("x", "y")]
+    # scale only space axes
     cur_ind <- index
-    cur_ind[c("x", "y")] <-
-      lapply(seq_along(index[c("x", "y")]), function(j) {
-        curind <- index[c("x", "y")][[j]]
-        id <- c(
-          floor(utils::head(curind, 1) / (2^(i - 1))),
-          ceiling(utils::tail(curind, 1) / (2^(i - 1)))
+    cur_scale <- sc[[i]]
+    selected_dim <- stats::setNames(dim(img), ax)[scaled_axes]
+    cur_ind[scaled_axes] <-
+      lapply(seq_along(index[scaled_axes]), function(j) {
+        ind <- index[scaled_axes][[j]]
+        ind <- c(
+          floor(ind[1] * cur_scale[scaled_axes][j]),
+          ceiling(ind[length(ind)] * cur_scale[scaled_axes][j])
         )
-        seq(max(id[1], 1), min(id[2], dim_img[j]))
+        seq(max(ind[1], 1), min(ind[2], selected_dim[j]))
       })
+    # subset after scaling indices of space axes
     object[[i]] <- .subset_array(img, cur_ind, drop = FALSE)
   }
 
@@ -83,8 +89,34 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
 
 #' @describeIn ImageArray-methods get axes metadata of the ImageArray object
 #' @exportMethod axes
-setMethod("axes", "ImageArray", function(object) meta(object)[["axes"]])
+setMethod("axes", "ImageArray", function(object) object@axes)
 
-#' @describeIn ImageArray-methods get metadata of the ImageArray object
-#' @exportMethod meta
-setMethod("meta", "ImageArray", function(object) object@meta)
+#' @describeIn ImageArray-methods get scales metadata of the ImageArray object
+#' @exportMethod scales
+setMethod("scales", "ImageArray", function(object) object@scales)
+
+####
+# Utils ####
+####
+
+#' @noRd
+.subset_array <- function(x, idx, drop = FALSE) {
+  d <- dim(x)
+  if (is.null(d)) {
+    stop("x must be an array or matrix.")
+  }
+  if (length(idx) > length(d)) {
+    stop("Too many index dimensions provided.")
+  }
+  
+  # pad missing dimensions with full slices
+  while (length(idx) < length(d)) {
+    idx[[length(idx) + 1]] <- seq_len(d[length(idx) + 1])
+  }
+  
+  if (length(idx) == 3) {
+    x[idx[[1]], idx[[2]], idx[[3]], drop = drop]
+  } else {
+    x[idx[[1]], idx[[2]], drop = drop]
+  }
+}
