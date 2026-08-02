@@ -187,7 +187,7 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 #' @param scales a list of named numeric vectors where names are a  
 #'  subset of \code{axes} and values are associated with scales 
 #'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
-#'  information.
+#'  information. When provided, \code{axes} will be overwritten. 
 #'
 #' @importFrom S4Vectors new2
 #' @export

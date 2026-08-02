@@ -24,6 +24,8 @@
 \alias{extent}
 \alias{extent,ImageArray-method}
 \alias{[,ImageArray,ANY,ANY,ANY-method}
+\alias{[[,ImageArray,numeric,ANY-method}
+\alias{[[<-,ImageArray,numeric,ANY,ANY-method}
 \alias{dim,ImageArray-method}
 \alias{type,ImageArray-method}
 \alias{length,ImageArray-method}
@@ -36,9 +38,9 @@
 \usage{
 \S4method{[}{ImageArray,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
-\S4method{[[}{ImageArray,numeric}(x, i)
+\S4method{[[}{ImageArray,numeric,ANY}(x, i)
 
-\S4method{[[}{ImageArray,numeric}(x, i, j, ...) <- value
+\S4method{[[}{ImageArray,numeric,ANY,ANY}(x, i, j, ...) <- value
 
 \S4method{dim}{ImageArray}(x)
 
@@ -97,7 +99,7 @@ Should be a subset of c("c", "y", "x", "z", "t")}
 \item{scales}{a list of named numeric vectors where names are a
 subset of \code{axes} and values are associated with scales 
 of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
-information.}
+information. When provided, \code{axes} will be overwritten.}
 
 \item{level}{level}
 
@@ -131,7 +133,7 @@ for \code{ImageArray} objects
 \item \code{x[[i}: Layer access
 for \code{ImageArray} objects
 
-\item \code{`[[`(x = ImageArray, i = numeric) <- value}: Layer access
+\item \code{`[[`(x = ImageArray, i = numeric, j = ANY) <- value}: Layer access
 for \code{ImageArray} objects
 
 \item \code{dim(ImageArray)}: dimensions of an ImageArray
