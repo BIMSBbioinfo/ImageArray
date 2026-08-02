@@ -1,6 +1,3 @@
-#' @importFrom EBImage rotate flip flop
-NULL
-
 #' @name trans
 #' @rdname trans
 #' @title Transformations

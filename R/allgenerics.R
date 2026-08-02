@@ -1,4 +1,6 @@
-#' @importFrom BiocGenerics scale
+#' @importMethodsFrom BiocGenerics scale
+#' @importFrom EBImage rotate flip flop
+NULL
 
 # generics of ImageArray
 setGeneric("crop", function(object, ...) standardGeneric("crop"))

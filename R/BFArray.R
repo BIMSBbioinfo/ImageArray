@@ -78,15 +78,16 @@ BFArray <- function(image.file, series, resolution) {
       USE.NAMES = FALSE
     )
     
-    names(shape) <- toupper(axes)
     # remove dimensions with size 1 to mimic RBioFormats::read.image behavior
+    axes <- toupper(axes[shape > 1])
     shape <- shape[shape > 1]
 
     seed <- BFArraySeed(
       filepath = image.file,
       series = series,
       resolution = resolution,
-      shape = shape,
+      dim = shape,
+      axes = axes,
       type = "double"
     )
     .BFArray(seed = seed)
@@ -96,13 +97,13 @@ BFArray <- function(image.file, series, resolution) {
 }
 
 #' @importFrom S4Vectors new2
-BFArraySeed <- function(filepath, series, resolution, shape, type) {
+BFArraySeed <- function(filepath, series, resolution, dim, axes, type) {
   S4Vectors::new2(
     "BFArraySeed",
-    filepath = filepath,
     series = series,
     resolution = resolution,
-    shape = shape,
+    dim = dim,
+    axes = axes,
     type = type
   )
 }
@@ -112,7 +113,19 @@ BFArraySeed <- function(filepath, series, resolution, shape, type) {
 ###
 
 #' @describeIn BFArray-methods dim function for BFArray objects
-setMethod("dim", "BFArraySeed", function(x) unname(x@shape))
+setMethod("dim", "BFArraySeed", function(x) x@dim)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### axes() getter
+###
+
+#' @describeIn BFArray-methods axes function for BFArray objects
+#' @exportMethod axes
+setMethod("axes", "BFArray", function(object) axes(seed(object)))
+
+#' @describeIn BFArray-methods axes function for BFArray objects
+#' @exportMethod axes
+setMethod("axes", "BFArraySeed", function(object) object@axes)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### type() getter
@@ -144,23 +157,25 @@ setMethod("type", "BFArraySeed", function(x) x@type)
       }
     },
     index,
-    x@shape,
+    x@dim,
     SIMPLIFY = FALSE
   )
-
+  
   # get slices
   len_ind <- lengths(ind)
   if (any(len_ind == 0)) {
     res <- array(dim = len_ind)
     type(res) <- x@type
   } else {
-    subset_list <- setNames(ind , names(x@shape))
+    subset_list <- setNames(ind, x@axes)
+    print("art")
     res <- RBioFormats::read.image(
       file = x@filepath,
       series = x@series,
       resolution = x@resolution,
       subset = subset_list
     )
+    print("art")
     res <- EBImage::imageData(res)
     dim(res) <- len_ind
   }

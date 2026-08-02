@@ -27,7 +27,8 @@ setClassUnion("matrix_array_Array",
     filepath = "character",
     series = "numeric",
     resolution = "numeric",
-    shape = "numeric",
+    axes = "character",
+    dim = "numeric",
     type = "character"
   )
 )

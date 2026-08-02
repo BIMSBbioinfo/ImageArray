@@ -176,6 +176,11 @@ setMethod("type", "ImageArray", function(x) type(x[[1]]))
 #' @returns length of ImageArray object
 setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 
+####
+# Create/Write ####
+####
+
+
 #' @describeIn ImageArray-methods ImageArray constructor method
 #'
 #' A function for creating objects of ImageArray class
@@ -205,10 +210,6 @@ ImageArray <- function(levels, axes, scales = NULL) {
     scales = scales
   )
 }
-
-####
-# Create/Write ####
-####
 
 #' createBFArray
 #'
@@ -241,8 +242,8 @@ createBFArray <- function(
   image_list <- lapply(resolution, function(res) {
     BFArray(image, series = series, resolution = res)
   })
-  ImageArray(levels = image_list, 
-             axes = tolower(names(image_list[[1]]@seed@shape)))
+  return(list(levels = image_list, 
+         axes = tolower(axes(image_list[[1]]))))
 }
 
 #' createMagickArray
@@ -325,7 +326,7 @@ createMagickArray <- function(
   }
 
   # return
-  ImageArray(levels = image_list, axes = axes)
+  return(list(levels = image_list, axes = axes))
 }
 
 #' createMagickArray
@@ -402,7 +403,7 @@ createEBImageArray <- function(
   }
 
   # return
-  ImageArray(levels = image_list, axes = axes)
+  return(list(levels = image_list, axes = axes))
 }
 
 #' createImageArray
@@ -440,7 +441,6 @@ createEBImageArray <- function(
 #' imgarray <- createImageArray(img.file, n.levels = 3)
 #' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
 #' plot(imgarray_raster)
-#'
 createImageArray <- function(
   image,
   n.levels = NULL,
@@ -460,39 +460,31 @@ createImageArray <- function(
 
   # create ImageArray from magick
   if (inherits(image, c("magick-image", "bitmap"))) {
-    return(createMagickArray(
-      image,
-      n.levels = n.levels,
-      max.pixel.threshold = max.pixel.threshold,
-      verbose = verbose
-    ))
-  }
-
+    image <- createMagickArray(image,
+                               n.levels = n.levels,
+                               max.pixel.threshold = max.pixel.threshold,
+                               verbose = verbose)
   # create ImageArray from EBImage
-  if (inherits(image, c("Image"))) {
-    return(createEBImageArray(
-      image,
-      n.levels = n.levels,
-      max.pixel.threshold = max.pixel.threshold,
-      verbose = verbose
-    ))
-  }
-
-  # check image format
-  if (inherits(image, "character")) {
+  } else if (inherits(image, c("Image"))) {
+    image <- createEBImageArray(image,
+                                n.levels = n.levels,
+                                max.pixel.threshold = max.pixel.threshold,
+                                verbose = verbose)
+  # create ImageArray from file path
+  } else if (inherits(image, "character")) {
     if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
       image <- createBFArray(image, series = series, resolution = resolution)
     } else {
       image <- read_image(image, engine = engine)
       if (inherits(image, "magick-image")) {
-        createMagickArray(
+        image <- createMagickArray(
           image,
           n.levels = n.levels,
           max.pixel.threshold = max.pixel.threshold,
           verbose = verbose
         )
       } else if (inherits(image, "Image")) {
-        createEBImageArray(
+        image <- createEBImageArray(
           image,
           n.levels = n.levels,
           max.pixel.threshold = max.pixel.threshold,
@@ -501,6 +493,10 @@ createImageArray <- function(
       }
     }
   }
+  
+  # construct ImageArray object
+  ImageArray(levels = image$levels, 
+             axes = image$axes)
 }
 
 #' writeImageArray

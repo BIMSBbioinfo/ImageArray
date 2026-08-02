@@ -4,12 +4,15 @@
 \alias{BFArray-methods}
 \alias{BFArray}
 \alias{dim,BFArraySeed-method}
+\alias{axes,BFArraySeed-method}
 \alias{type,BFArraySeed-method}
 \title{BFArray constructor method}
 \usage{
 BFArray(image.file, series, resolution)
 
 \S4method{dim}{BFArraySeed}(x)
+
+\S4method{axes}{BFArraySeed}(object)
 
 \S4method{type}{BFArraySeed}(x)
 }
@@ -34,6 +37,8 @@ A function for creating objects of BFArray class
 \section{Functions}{
 \itemize{
 \item \code{dim(BFArraySeed)}: dim function for BFArray objects
+
+\item \code{axes(BFArraySeed)}: axes function for BFArray objects
 
 \item \code{type(BFArraySeed)}: type function for BFArray objects
 
