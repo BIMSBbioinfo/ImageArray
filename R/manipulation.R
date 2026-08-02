@@ -65,7 +65,7 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
 
   # crop all images
   sc <- scales(object)
-  for (i in seq_along(levels(object))) {
+  for (i in seq_along(object@levels)) {
     img <- object[[i]]
     # scale only space axes
     cur_ind <- index
