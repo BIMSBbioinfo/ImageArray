@@ -27,7 +27,6 @@
 \alias{dim,ImageArray-method}
 \alias{type,ImageArray-method}
 \alias{length,ImageArray-method}
-\alias{ImageArray}
 \alias{as.raster.ImageArray}
 \alias{aperm,ImageArray-method}
 \alias{scales,ImageArray-method}
@@ -45,8 +44,6 @@
 \S4method{type}{ImageArray}(x)
 
 \S4method{length}{ImageArray}(x)
-
-ImageArray(levels, axes, scales = NULL)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -88,17 +85,6 @@ ImageArray(levels, axes, scales = NULL)
 
 \item{drop}{ignored}
 
-\item{levels}{levels of the pyramid image, typically a vector of integers
-starting with 1}
-
-\item{axes}{a character vector of axes names for images. 
-Should be a subset of c("c", "y", "x", "z", "t")}
-
-\item{scales}{a list of named numeric vectors where names are a
-subset of \code{axes} and values are associated with scales 
-of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
-information. When provided, \code{axes} will be overwritten.}
-
 \item{level}{level}
 
 \item{max.pixel.size}{maximum pixel size}
@@ -117,8 +103,6 @@ dim of the first level of the ImageArray object
 type of ImageArray object
 
 length of ImageArray object
-
-An ImageArray object
 }
 \description{
 Methods for \code{ImageArray} objects
@@ -139,10 +123,6 @@ for \code{ImageArray} objects
 \item \code{type(ImageArray)}: dimensions of an ImageArray
 
 \item \code{length(ImageArray)}: length of an ImageArray
-
-\item \code{ImageArray()}: ImageArray constructor method
-
-A function for creating objects of ImageArray class
 
 \item \code{realize(ImageArray)}: realize the array
 

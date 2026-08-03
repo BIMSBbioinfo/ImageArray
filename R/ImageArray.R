@@ -180,38 +180,7 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 # Create/Write ####
 ####
 
-
-#' @describeIn ImageArray-methods ImageArray constructor method
-#'
-#' A function for creating objects of ImageArray class
-#'
-#' @param levels levels of the pyramid image, typically a vector of integers
-#'  starting with 1
-#' @eval paste0("@param axes a character vector of axes names for images. 
-#'  Should be a subset of ", deparse(.AXES))
-#' @param scales a list of named numeric vectors where names are a  
-#'  subset of \code{axes} and values are associated with scales 
-#'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
-#'  information. When provided, \code{axes} will be overwritten. 
-#'
-#' @importFrom S4Vectors new2
-#' @export
-#' @return An ImageArray object
-ImageArray <- function(levels, axes, scales = NULL) {
-  if(is.null(scales)){
-    scales <- .get_scales(levels, axes)
-  } else {
-    axes <- .get_axes(scales)
-  }
-  S4Vectors::new2(
-    "ImageArray", 
-    levels = S4Vectors:::new_SimpleList_from_list("ImageList", levels),
-    axes = axes,
-    scales = scales
-  )
-}
-
-#' createBFArray
+#' createListFromBF
 #'
 #' creates an object of BFArray class
 #'
@@ -224,7 +193,7 @@ ImageArray <- function(levels, axes, scales = NULL) {
 #' @param verbose verbose
 #'
 #' @noRd
-createBFArray <- function(
+createListFromBF <- function(
   image,
   series = NULL,
   resolution = NULL,
@@ -246,7 +215,7 @@ createBFArray <- function(
          axes = tolower(axes(image_list[[1]]))))
 }
 
-#' createMagickArray
+#' createListFromMagick
 #'
 #' creates an object of ImageArray class from magick image
 #'
@@ -267,8 +236,9 @@ createBFArray <- function(
 #' @importFrom magick geometry_size_percent
 #'
 #' @noRd
-createMagickArray <- function(
+createListFromMagick <- function(
   image,
+  axes = NULL,
   n.levels = NULL,
   max.pixel.threshold = 700,
   verbose = FALSE
@@ -329,7 +299,7 @@ createMagickArray <- function(
   return(list(levels = image_list, axes = axes))
 }
 
-#' createMagickArray
+#' createListFromMagick
 #'
 #' creates an object of ImageArray class from magick image
 #'
@@ -347,8 +317,9 @@ createMagickArray <- function(
 #' @importFrom EBImage resize
 #'
 #' @noRd
-createEBImageArray <- function(
+createListFromEBImage <- function(
   image,
+  axes = NULL,
   n.levels = NULL,
   max.pixel.threshold = 700,
   verbose = FALSE
@@ -406,24 +377,61 @@ createEBImageArray <- function(
   return(list(levels = image_list, axes = axes))
 }
 
-#' createImageArray
+createListFromList <- function(image,
+                               axes = NULL,
+                               n.levels = NULL,
+                               max.pixel.threshold = 700,
+                               verbose = FALSE){
+  axes <- lapply(image, \(.) .guess_axes(., axes))
+  all_equal <- all(vapply(axes, identical, logical(1), axes[[1L]]))
+  if(!all_equal)
+    stop("All images must have identical axes")
+  return(list(levels = image, axes = axes))
+}
+  
+  
+setOldClass("magick-image")
+setOldClass("bitmap")
+setClassUnion(c("magick_class"), 
+              c("magick-image", "bitmap"))
+
+#' @noRd
+setMethod("createImageList", "magick_class", createListFromMagick)
+
+#' @noRd
+setMethod("createImageList", "Image", createListFromEBImage)
+
+#' @noRd
+setMethod("createImageList", "character", createListFromBF)
+
+#' @noRd
+setMethod("createImageList", "list", createListFromList)
+
+#' ImageArray
 #'
 #' creates an object of ImageArray class
 #'
-#' @param image the image
+#' @param image a path to a file, a single array or a list of arrays
+#'  containing the pixel intensities of an image.
+#' @eval paste0("@param axes a character vector of axes names for images. 
+#'  Should be a subset of ", deparse(.AXES))
 #' @param n.levels the number of levels of the pyramidal image,
-#' typical an integer starting from 1
-#' @param series the series IDs of the pyramidal image,
-#' typical an integer starting from 1.
-#' @param resolution the resolution IDs of the pyramidal image,
-#' typical an integer starting from 1.
+#'  typical an integer starting from 1
 #' @param max.pixel.threshold the maximum width
-#' and height pixel dimension that the lowest level of the image pyramid
-#' should have, thus the image will be downscaled two folds until both width
-#' and height is below the threshold. Default is 700 pixels.
-#' If \code{n.levels} is provided, this parameter will be ignored.
+#'  and height pixel dimension that the lowest level of the image pyramid
+#'  should have, thus the image will be downscaled two folds until both width
+#'  and height is below the threshold. Default is 700 pixels.
+#'  If \code{n.levels} is provided, this parameter will be ignored.
+#' @param scales a list of named numeric vectors where names are a  
+#'  subset of \code{axes} and values are associated with scales 
+#'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+#'  information. When provided, \code{axes} will be overwritten. 
 #' @param engine the package to use for each image layer: either
-#' \code{EBImage} or \code{magick-image}
+#'  \code{EBImage} or \code{magick-image}
+#' @param series the series IDs of the pyramidal image,
+#'  typical an integer starting from 1.
+#' @param resolution the resolution IDs of the pyramidal image,
+#'  typical an integer starting from 1.
 #' @param verbose verbose
 #'
 #' @importFrom methods new
@@ -438,65 +446,66 @@ createEBImageArray <- function(
 #' img.file <- system.file("images", "sample.png", package="EBImage")
 #'
 #' # create ImageArray
-#' imgarray <- createImageArray(img.file, n.levels = 3)
+#' imgarray <- ImageArray(img.file, n.levels = 3)
 #' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
 #' plot(imgarray_raster)
-createImageArray <- function(
-  image,
-  n.levels = NULL,
-  series = NULL,
-  resolution = NULL,
-  max.pixel.threshold = 700,
-  engine = "EBImage",
-  verbose = FALSE
+ImageArray <- function(
+    image,
+    axes, 
+    n.levels = NULL,
+    max.pixel.threshold = 700,
+    scales = NULL,
+    engine = "EBImage",
+    series = NULL,
+    resolution = NULL,
+    verbose = FALSE
 ) {
-  # convert to bitmap array if integer
-  if (is.integer(image)) {
-    if (engine == "magick-image") {
-      image <- array(as.raw(image), dim = c(3, 2, 1))
-    }
-    image <- read_image(image, engine = engine)
-  }
-
-  # create ImageArray from magick
-  if (inherits(image, c("magick-image", "bitmap"))) {
-    image <- createMagickArray(image,
-                               n.levels = n.levels,
-                               max.pixel.threshold = max.pixel.threshold,
-                               verbose = verbose)
-  # create ImageArray from EBImage
-  } else if (inherits(image, c("Image"))) {
-    image <- createEBImageArray(image,
-                                n.levels = n.levels,
-                                max.pixel.threshold = max.pixel.threshold,
-                                verbose = verbose)
+  
   # create ImageArray from file path
-  } else if (inherits(image, "character")) {
+  if (inherits(image, "character")) {
     if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
-      image <- createBFArray(image, series = series, resolution = resolution)
+      image <- createListFromBF(image, 
+                                series = series, 
+                                resolution = resolution)
     } else {
       image <- read_image(image, engine = engine)
-      if (inherits(image, "magick-image")) {
-        image <- createMagickArray(
-          image,
-          n.levels = n.levels,
-          max.pixel.threshold = max.pixel.threshold,
-          verbose = verbose
-        )
-      } else if (inherits(image, "Image")) {
-        image <- createEBImageArray(
-          image,
-          n.levels = n.levels,
-          max.pixel.threshold = max.pixel.threshold,
-          verbose = verbose
-        )
-      }
     }
+    # convert to bitmap array if integer, otherwise read as it is
+  } else if(is.array(image)){
+    if (is.integer(image) & engine == "magick-image")
+      image <- array(as.raw(image), dim = c(3, 2, 1))
+    image <- read_image(image, engine = engine)
+  } else if(is.list(image)) {
+    lapply(image, function(img){
+      if(!is.array(img))
+        stop("Each element of the list should be an array")
+    })
+  } else {
+    stop("image should either be a path to an image, or an array")
   }
   
+  # read image list
+  image <- createImageList(
+    image,
+    axes = axes,
+    n.levels = n.levels,
+    max.pixel.threshold = max.pixel.threshold,
+    verbose = verbose
+  )
+  
   # construct ImageArray object
-  ImageArray(levels = image$levels, 
-             axes = image$axes)
+  if(is.null(scales)){
+    scales <- .get_scales(image$levels, image$axes)
+  } else {
+    axes <- .get_axes_from_scales(scales)
+  }
+  levels <- S4Vectors:::new_SimpleList_from_list("ImageList", image$levels)
+  S4Vectors::new2(
+    "ImageArray", 
+    levels = levels,
+    axes = axes,
+    scales = scales
+  )
 }
 
 #' writeImageArray
@@ -567,7 +576,7 @@ writeImageArray <- function(
 
   # make Image Array
   if (!inherits(image, "ImageArray")) {
-    image_list <- createImageArray(
+    image_list <- ImageArray(
       image,
       n.levels = n.levels,
       verbose = verbose,
@@ -706,11 +715,75 @@ writeImageArray <- function(
 
 #' @keywords internal
 #' @noRd
-.get_axes <- function(scales){
+.get_axes_from_scales <- function(scales){
   if(!is.list(scales))
     stop("scales must be a list!")
   for(sc in scales){
     if(is.null(names(sc))) stop("Each vector in scales should be named!")
   }
   names(scales[[1]])
+}
+
+#' @keywords internal
+#' @noRd
+.guess_axes <- function(
+    image,
+    axes
+) {
+  # We can guess axes for images, labels if 2D (with/without channels)
+  ndim <- length(dim(image))
+  if (is.null(axes)) {
+    if (ndim %in% c(2, 3)) {
+      axes <- c("x", "y", if (ndim == 3) "c" else NULL)
+    } else {
+      stop(
+        "axes must be provided. Can't be guessed beyond 2D images ",
+        "with or without channels!",
+        call. = FALSE
+      )
+    }
+  } else {
+    if (is.character(axes) && length(axes) == 1L) {
+      axes <- strsplit(axes, "", fixed = TRUE)[[1]]
+    }
+    if (length(axes) != ndim) {
+      stop(
+        sprintf(
+          "axes length (%d) must match number of dimensions (%d)",
+          length(axes),
+          ndim
+        ),
+        call. = FALSE
+      )
+    }
+  }
+  
+  # axes length should match # of dim
+  if (!is.null(ndim) && length(axes) != ndim) {
+    stop(
+      sprintf(
+        "axes length (%d) must match number of dimensions (%d)",
+        length(axes),
+        ndim
+      ),
+      call. = FALSE
+    )
+  }
+  
+  # invalid axes
+  diff_axes <- setdiff(axes, .AXES)
+  if (length(diff_axes)) {
+    stop("Some axes are invalid: ", paste(diff_axes, collapse = ","))
+  }
+  
+  # duplicated axes
+  ind_dup <- which(table(axes) > 1)
+  if (length(ind_dup)) {
+    stop(
+      "Duplicated axes are detected: ",
+      paste(names(ind_dup), collapse = ",")
+    )
+  }
+  
+  axes
 }
