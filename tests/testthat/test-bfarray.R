@@ -16,12 +16,34 @@ img.file2 <- system.file(
   package = "ImageArray"
 )
 
-test_that("bfarray object", {
+test_that("BFPath", {
+  
+  # create BFPath object
+  bfp <- BFPath(img.file)
+  expect_equal(series(bfp), 1)
+  expect_equal(resolution(bfp), 1:2)
+  bfp <- BFPath(img.file, series = 1)
+  expect_equal(series(bfp), 1)
+  expect_equal(resolution(bfp), 1:2)
+  bfp <- BFPath(img.file, series = 1, resolution = 1)
+  expect_equal(series(bfp), 1)
+  expect_equal(resolution(bfp), 1)
+  
+  # faulty series
+  expect_error(BFPath(img.file, series = 1.2), 
+               "series not found")
+  expect_error(BFPath(img.file, series = 1, resolution = 3), 
+               "resolutions not found")
+  expect_error(BFPath(img.file, series = 1, resolution = 1.2), 
+               "resolutions not found")
+})
+
+test_that("BFArray object", {
   
   # create array
-  bfa <- BFArray(img.file, series = 1, resolution = 2)
+  bfa <- BFArray(BFPath(img.file, series = 1, resolution = 2))
   expect_equal(dim(bfa), c(256, 256))
-  bfa <- BFArray(img.file, series = 1, resolution = 1)
+  bfa <- BFArray(BFPath(img.file, series = 1, resolution = 1))
   expect_equal(dim(bfa), c(512, 512))
 
   # methods
@@ -29,11 +51,11 @@ test_that("bfarray object", {
   expect_equal(bfa2[1, 2], bfa[2, 1])
 
   # construct imagearray
-  img <- createImageArray(img.file, series = 1, resolution = 1:2)
+  img <- ImageArray(img.file, series = 1, resolution = 1:2)
   expect_equal(length(img), 2)
-  img <- createImageArray(img.file2, series = 1, resolution = 1)
+  img <- ImageArray(img.file2, series = 1, resolution = 1)
   expect_equal(length(img), 1)
-  expect_error(img <- createImageArray(img.file2, series = 1, resolution = 1:2))
+  expect_error(img <- ImageArray(img.file2, series = 1, resolution = 1:2))
 
   # single channel modulate
   img_modulated <- modulate(img, brightness = 200)
@@ -43,9 +65,9 @@ test_that("bfarray object", {
   expect_equal(orig, newmat)
 })
 
-test_that("bfarray based ImageArray", {
+test_that("BFArray based ImageArray", {
   # create array
-  img <- createImageArray(img.file, series = 1, resolution = 1:2)
+  img <- ImageArray(img.file, series = 1, resolution = 1:2)
   expect_equal(length(img), 2)
 
   # get image info

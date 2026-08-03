@@ -153,7 +153,7 @@ library(EBImage)
 img.file <- system.file("images", "sample.png", package="EBImage")
 
 # create ImageArray
-imgarray <- createImageArray(img.file, n.levels = 3)
+imgarray <- ImageArray(img.file, n.levels = 3)
 
 # access layers
 imgarray[[1]]

@@ -6,7 +6,7 @@ test_that("check indexing", {
   img.file <- system.file("images", "sample.png", package = "EBImage")
   
   # create ImageArray
-  imgarray <- createImageArray(img.file, n.levels = 2)
+  imgarray <- ImageArray(img.file, n.levels = 2)
 
   # crop
   imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200))
@@ -33,7 +33,7 @@ test_that("check indexing", {
 test_that("check indexing (3D)", {
   
   # create ImageArray
-  imgarray <- ImageArray(levels = list(array(1:2197, dim = c(13,13,13)),
+  imgarray <- ImageArray(image = list(array(1:2197, dim = c(13,13,13)),
                                        array(1:1000, dim = c(10,10,10)),
                                        array(1:216, dim = c(6,6,6))),
                          axes = c("z", "x", "y"))
@@ -68,7 +68,7 @@ test_that("check indexing (BFArray)", {
   )
   
   # create ImageArray
-  imgarray <- createImageArray(img.file, series = 1, resolution = 1:2)
+  imgarray <- ImageArray(img.file, series = 1, resolution = 1:2)
   
   # crop
   imgarray_vis <- crop(imgarray, ind = list(100:200, 100:200))

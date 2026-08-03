@@ -24,7 +24,7 @@
 #' getImageInfo(imgarray)
 #'
 #' # create ImageArray
-#' imgarray <- createImageArray(img.file, n.levels = 3)
+#' imgarray <- ImageArray(img.file, n.levels = 3)
 #' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
 #' getImageInfo(imgarray)
 #'
@@ -46,10 +46,27 @@ getImageInfo <- function(object) {
 #'
 #' @noRd
 #' @keywords internal
-read_image <- function(image, engine) {
+NULL
+
+#' @describeIn read_image read image
+#' @exportMethod read_image
+setMethod("read_image", "character", function(image, engine) {
   switch(
     engine,
     `magick-image` = magick::image_read(image),
     `EBImage` = EBImage::readImage(image)
   )
-}
+})
+
+#' @describeIn read_image read image
+#' @exportMethod read_image
+setMethod("read_image", "array", function(image, engine) {
+  if(inherits(image, "bitmap"))
+    engine <- "magick-image"
+  switch(
+    engine,
+    `magick-image` = magick::image_read(image),
+    `EBImage` = EBImage::Image(image)
+  )
+})
+

@@ -30,7 +30,7 @@ imgarray <- writeImageArray(img.file,
 getImageInfo(imgarray)
 
 # create ImageArray
-imgarray <- createImageArray(img.file, n.levels = 3)
+imgarray <- ImageArray(img.file, n.levels = 3)
 imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
 getImageInfo(imgarray)
 

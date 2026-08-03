@@ -32,3 +32,23 @@
 }
 
 setValidity("ImageArray", .validate_ImageArray)
+
+.validate_BFPath<- function(object) {
+  
+  # check series
+  if(length(series(object)) > 1)
+    stop("series cannot be longer than 1!")
+  if(series(object) %% 1 != 0)
+    stop("series should be an integer!")
+  
+  # check resolution
+  lapply(resolution(object), 
+         \(.) {
+           if(. %% 1 != 0)
+             stop("resolution values should be integers!")
+         })
+  
+  TRUE
+}
+
+setValidity("BFPath", .validate_BFPath)

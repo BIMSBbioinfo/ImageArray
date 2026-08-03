@@ -1,14 +1,12 @@
+### - - - - - - - - - - - - - - - - - -
+### BFArray
+###
+
 #' BFArray constructor method
 #'
 #' A function for creating objects of BFArray class
 #'
-#' @param x A BFArray object
-#' @param image.file the path to the image read by
-#' RBioFormats
-#' @param series the series IDs of the pyramidal image,
-#' typical an integer starting from 1
-#' @param resolution the resolution IDs of the
-#' pyramidal image, typical an integer starting from 1
+#' @param image A BFPath object
 #'
 #' @name BFArray-methods
 #' @rdname BFArray-methods
@@ -22,10 +20,12 @@
 #' img.file <- system.file("extdata",
 #'                         "xy_12bit__plant.ome.tiff",
 #'                         package = "ImageArray")
-#' bfa <- BFArray(img.file, series = 1, resolution = 2)
+#' bfp <- BFPath(img.file, series = 1, resolution = 2)                         
+#' bfa <- BFArray(bfp)
 #' dim(bfa)
 #' type(bfa)
-BFArray <- function(image.file, series, resolution) {
+BFArray <- function(image) {
+  
   # check RBioFormats
   if (!requireNamespace("RBioFormats")) {
     stop("Please install RBioFormats: BiocManager::install('RBioFormats')")
@@ -33,7 +33,7 @@ BFArray <- function(image.file, series, resolution) {
 
   # get metadata
   meta.data <- RBioFormats::read.metadata(
-    file = image.file,
+    file = path(image),
     filter.metadata = TRUE,
     proprietary.metadata = TRUE
   )
@@ -61,8 +61,8 @@ BFArray <- function(image.file, series, resolution) {
   )
   series_index <-
     which(
-      series_res_meta[1, ] == series &
-        series_res_meta[2, ] == resolution
+      series_res_meta[1, ] == series(image) &
+        series_res_meta[2, ] == resolution(image)
     )
   if (length(series_index) > 0) {
     shape <- vapply(
@@ -83,9 +83,9 @@ BFArray <- function(image.file, series, resolution) {
     shape <- shape[shape > 1]
 
     seed <- BFArraySeed(
-      filepath = image.file,
-      series = series,
-      resolution = resolution,
+      filepath = path(image),
+      series = series(image),
+      resolution = resolution(image),
       dim = shape,
       axes = axes,
       type = "double"
@@ -95,6 +95,10 @@ BFArray <- function(image.file, series, resolution) {
     stop("Specified resolution was not found in the image!")
   }
 }
+
+### - - - - - - - - - - - - - - - - - -
+### BFArraySeed
+###
 
 #' @importFrom S4Vectors new2
 BFArraySeed <- function(filepath, series, resolution, dim, axes, type) {
@@ -191,3 +195,96 @@ setMethod("extract_array", "BFArraySeed", .extract_array_from_BFArraySeed)
 setMethod("DelayedArray", "BFArraySeed", function(seed) {
   new_DelayedArray(seed, Class = "BFArray")
 })
+
+### - - - - - - - - - - - - - - - - - -
+### BFPath
+###
+
+#' BFPath constructor method
+#'
+#' A function for creating objects of BFPath class
+#'
+#' @param filepath the path to the image read by RBioFormats
+#' @param series the series IDs of the pyramidal image,
+#' typical an integer starting from 1
+#' @param resolution the resolution IDs of the
+#' pyramidal image, typical an integer starting from 1
+#'
+#' @name BFArray-methods
+#' @rdname BFArray-methods
+#'
+#' @importFrom S4Vectors new2
+#' 
+#' @export
+#' @return A BFArray object
+#'
+#' @examples
+#' # get image
+#' library(RBioFormats)
+#' img.file <- system.file("extdata",
+#'                         "xy_12bit__plant.ome.tiff",
+#'                         package = "ImageArray")
+#' bfp <- BFPath(img.file, series = 1, resolution = 2)                         
+#' series(bfp)
+#' resolution(bfp)
+BFPath <- function(filepath, series = NULL, resolution = NULL) {
+  
+  # check RBioFormats
+  if (!requireNamespace("RBioFormats")) {
+    stop("Please install RBioFormats: BiocManager::install('RBioFormats')")
+  }
+  
+  # get metadata
+  meta.data <- RBioFormats::read.metadata(
+    file = filepath,
+    filter.metadata = TRUE,
+    proprietary.metadata = TRUE
+  )
+  len_meta <- lengths(meta.data@.Data)
+  meta.data@.Data <- meta.data@.Data[which(len_meta > 0)]
+  
+  # series and resolution metadata
+  meta <- as.data.frame(t(vapply(
+    meta.data@.Data,
+    function(x) {
+      if (!is.null(cm <- x$coreMetadata)) 
+        x <- cm
+      c(series = x$series,
+        resolutionLevel = x$resolutionLevel)
+    },
+    c(series = 0L, resolutionLevel = 0L)
+  )))
+
+  # check for nulls
+  if (is.null(series)) {
+    series <- 1
+  } else {
+    if(!series %in% meta$series) stop("series not found")
+  }
+  res_list <- meta$resolutionLevel[meta$series == series]
+  if (is.null(resolution)) {
+    resolution <- res_list
+  } else {
+    if(!all(resolution %in% res_list)) stop("resolutions not found")
+  }
+  
+  S4Vectors::new2(
+    "BFPath",
+    filepath = filepath,
+    series = series,
+    resolution = resolution
+  )
+}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### getters
+###
+
+#' @exportMethod series
+setMethod("series", "BFPath", function(x) x@series)
+
+#' @exportMethod resolution
+setMethod("resolution", "BFPath", function(x) x@resolution)
+
+#' @exportMethod path
+setMethod("path", "BFPath", function(object, ...) object@filepath)

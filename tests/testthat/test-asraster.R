@@ -12,7 +12,7 @@ test_that("levels", {
   img <- magick::image_data(img)
 
   # create ImageArray
-  imgarray <- createImageArray(img, n.levels = 2)
+  imgarray <- ImageArray(img, n.levels = 2)
 
   # check as.raster
   imgarray2 <- as.raster(imgarray, max.pixel.size = 300)
@@ -26,9 +26,9 @@ test_that("levels", {
 test_that("levels (3D)", {
   
   # create ImageArray
-  imgarray <- ImageArray(levels = list(array(1:2197, dim = c(13,13,13)),
-                                       array(1:1000, dim = c(10,10,10)),
-                                       array(1:216, dim = c(6,6,6))),
+  imgarray <- ImageArray(image = list(array(1:2197, dim = c(13,13,13)),
+                                      array(1:1000, dim = c(10,10,10)),
+                                      array(1:216, dim = c(6,6,6))),
                          axes = c("x", "y", "z"))
   
   # check as.raster

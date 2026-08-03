@@ -65,14 +65,10 @@ img_file <- system.file("images", "sample.png", package="EBImage")
 img = readImage(img_file)
 
 dir.create(td <- tempfile())
-h5_sample <- file.path(td, "sample")
+output <- file.path(td, "sample.h5")
 imgarray <- writeImageArray(img, 
-                            format = "h5", 
-                            output = h5_sample, 
+                            output = output, 
                             nlevels = 2)
-#> Warning in writeImageArray(img, format = "h5", output = h5_sample, nlevels =
-#> 2): The file extension of the output path does not match the specified format
-#> (h5). The object will be saved as h5 format.
 imgarray
 #> ImageArray Object (x,y) 
 #> Scales (2): (768,512) (384,256)
@@ -121,9 +117,9 @@ library(RBioFormats)
 ome_file <- system.file("extdata", 
                         "xy_12bit__plant.ome.tiff", 
                         package = "ImageArray")
-imgarray   <- createImageArray(ome_file, 
-                               series = 1, 
-                               resolution = 1:2)
+imgarray   <- ImageArray(ome_file, 
+                         series = 1, 
+                         resolution = 1:2)
 imgarray
 #> ImageArray Object (x,y) 
 #> Scales (2): (512,512) (256,256)

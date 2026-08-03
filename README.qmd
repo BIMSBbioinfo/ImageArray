@@ -65,10 +65,9 @@ img_file <- system.file("images", "sample.png", package="EBImage")
 img = readImage(img_file)
 
 dir.create(td <- tempfile())
-h5_sample <- file.path(td, "sample")
+output <- file.path(td, "sample.h5")
 imgarray <- writeImageArray(img, 
-                            format = "h5", 
-                            output = h5_sample, 
+                            output = output, 
                             nlevels = 2)
 imgarray
 ```
@@ -114,9 +113,9 @@ library(RBioFormats)
 ome_file <- system.file("extdata", 
                         "xy_12bit__plant.ome.tiff", 
                         package = "ImageArray")
-imgarray   <- createImageArray(ome_file, 
-                               series = 1, 
-                               resolution = 1:2)
+imgarray   <- ImageArray(ome_file, 
+                         series = 1, 
+                         resolution = 1:2)
 imgarray
 ```
 

@@ -49,7 +49,7 @@ writing the data to disk.}
 \item{verbose}{verbose}
 
 \item{...}{additional parameters passed to
-\link[ImageArray]{createImageArray}.}
+\link[ImageArray]{ImageArray}.}
 }
 \value{
 An ImageArray object

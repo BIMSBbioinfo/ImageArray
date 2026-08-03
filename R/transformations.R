@@ -25,7 +25,7 @@
 #' read.metadata(ome.tiff.file)
 #' 
 #' # define ImageArray object
-#' imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+#' imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 #' 
 #' # translate image
 #' imgarray_trans <- translation(imgarray, shift = c(100,20))

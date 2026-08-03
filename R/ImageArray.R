@@ -58,7 +58,7 @@
 #' img.file <- system.file("images", "sample.png", package="EBImage")
 #'
 #' # create ImageArray
-#' imgarray <- createImageArray(img.file, n.levels = 3)
+#' imgarray <- ImageArray(img.file, n.levels = 3)
 #'
 #' # access layers
 #' imgarray[[1]]
@@ -180,7 +180,7 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 # Create/Write ####
 ####
 
-#' createListFromBF
+#' createListFromBFPath
 #'
 #' creates an object of BFArray class
 #'
@@ -193,23 +193,18 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 #' @param verbose verbose
 #'
 #' @noRd
-createListFromBF <- function(
+createListFromBFPath <- function(
   image,
-  series = NULL,
-  resolution = NULL,
+  axes = NULL,
+  n.levels = NULL,
+  max.pixel.threshold = 700,
   verbose = FALSE
 ) {
-  # check for nulls
-  if (is.null(series)) {
-    series <- 1
-  }
-  if (is.null(resolution)) {
-    resolution <- 1
-  }
-
   # make list
-  image_list <- lapply(resolution, function(res) {
-    BFArray(image, series = series, resolution = res)
+  image_list <- lapply(resolution(image), function(res) {
+    BFArray(
+      BFPath(path(image), resolution = res)
+    )
   })
   return(list(levels = image_list, 
          axes = tolower(axes(image_list[[1]]))))
@@ -379,14 +374,14 @@ createListFromEBImage <- function(
 
 createListFromList <- function(image,
                                axes = NULL,
-                               n.levels = NULL,
+                               n.levels = NULL, 
                                max.pixel.threshold = 700,
                                verbose = FALSE){
   axes <- lapply(image, \(.) .guess_axes(., axes))
   all_equal <- all(vapply(axes, identical, logical(1), axes[[1L]]))
   if(!all_equal)
     stop("All images must have identical axes")
-  return(list(levels = image, axes = axes))
+  return(list(levels = image, axes = axes[[1L]]))
 }
   
   
@@ -402,7 +397,7 @@ setMethod("createImageList", "magick_class", createListFromMagick)
 setMethod("createImageList", "Image", createListFromEBImage)
 
 #' @noRd
-setMethod("createImageList", "character", createListFromBF)
+setMethod("createImageList", "BFPath", createListFromBFPath)
 
 #' @noRd
 setMethod("createImageList", "list", createListFromList)
@@ -451,7 +446,7 @@ setMethod("createImageList", "list", createListFromList)
 #' plot(imgarray_raster)
 ImageArray <- function(
     image,
-    axes, 
+    axes = NULL, 
     n.levels = NULL,
     max.pixel.threshold = 700,
     scales = NULL,
@@ -464,9 +459,7 @@ ImageArray <- function(
   # create ImageArray from file path
   if (inherits(image, "character")) {
     if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
-      image <- createListFromBF(image, 
-                                series = series, 
-                                resolution = resolution)
+      image <- BFPath(image, series, resolution)
     } else {
       image <- read_image(image, engine = engine)
     }
@@ -480,8 +473,6 @@ ImageArray <- function(
       if(!is.array(img))
         stop("Each element of the list should be an array")
     })
-  } else {
-    stop("image should either be a path to an image, or an array")
   }
   
   # read image list
@@ -497,13 +488,14 @@ ImageArray <- function(
   if(is.null(scales)){
     scales <- .get_scales(image$levels, image$axes)
   } else {
-    axes <- .get_axes_from_scales(scales)
+    image$axes <- .get_axes_from_scales(scales)
   }
-  levels <- S4Vectors:::new_SimpleList_from_list("ImageList", image$levels)
+  image$levels <- S4Vectors:::new_SimpleList_from_list("ImageList", 
+                                                       image$levels)
   S4Vectors::new2(
     "ImageArray", 
-    levels = levels,
-    axes = axes,
+    levels = image$levels,
+    axes = image$axes,
     scales = scales
   )
 }
@@ -532,7 +524,7 @@ ImageArray <- function(
 #' \code{EBImage} or \code{magick-image}
 #' @param verbose verbose
 #' @param ... additional parameters passed to
-#' \link[ImageArray]{createImageArray}.
+#' \link[ImageArray]{ImageArray}.
 #'
 #' @importFrom HDF5Array writeHDF5Array
 #' @importFrom ZarrArray writeZarrArray

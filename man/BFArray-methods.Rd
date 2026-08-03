@@ -7,9 +7,10 @@
 \alias{axes,BFArray-method}
 \alias{axes,BFArraySeed-method}
 \alias{type,BFArraySeed-method}
+\alias{BFPath}
 \title{BFArray constructor method}
 \usage{
-BFArray(image.file, series, resolution)
+BFArray(image)
 
 \S4method{dim}{BFArraySeed}(x)
 
@@ -18,24 +19,29 @@ BFArray(image.file, series, resolution)
 \S4method{axes}{BFArraySeed}(object)
 
 \S4method{type}{BFArraySeed}(x)
+
+BFPath(filepath, series = NULL, resolution = NULL)
 }
 \arguments{
-\item{image.file}{the path to the image read by
-RBioFormats}
+\item{image}{A BFPath object}
+
+\item{filepath}{the path to the image read by RBioFormats}
 
 \item{series}{the series IDs of the pyramidal image,
 typical an integer starting from 1}
 
 \item{resolution}{the resolution IDs of the
 pyramidal image, typical an integer starting from 1}
-
-\item{x}{A BFArray object}
 }
 \value{
+A BFArray object
+
 A BFArray object
 }
 \description{
 A function for creating objects of BFArray class
+
+A function for creating objects of BFPath class
 }
 \section{Functions}{
 \itemize{
@@ -54,7 +60,16 @@ library(RBioFormats)
 img.file <- system.file("extdata",
                         "xy_12bit__plant.ome.tiff",
                         package = "ImageArray")
-bfa <- BFArray(img.file, series = 1, resolution = 2)
+bfp <- BFPath(img.file, series = 1, resolution = 2)                         
+bfa <- BFArray(bfp)
 dim(bfa)
 type(bfa)
+# get image
+library(RBioFormats)
+img.file <- system.file("extdata",
+                        "xy_12bit__plant.ome.tiff",
+                        package = "ImageArray")
+bfp <- BFPath(img.file, series = 1, resolution = 2)                         
+series(bfp)
+resolution(bfp)
 }

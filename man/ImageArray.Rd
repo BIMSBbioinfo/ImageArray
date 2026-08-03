@@ -6,7 +6,7 @@
 \usage{
 ImageArray(
   image,
-  axes,
+  axes = NULL,
   n.levels = NULL,
   max.pixel.threshold = 700,
   scales = NULL,
