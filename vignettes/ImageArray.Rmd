@@ -202,7 +202,7 @@ ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
 read.metadata(ome.tiff.file)
 
 # define ImageArray object
-imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 imgarray
 ```
 
@@ -236,7 +236,7 @@ read.metadata(ome.tiff.file, proprietary.metadata = TRUE,
               filter.metadata = TRUE)
 
 # define ImageArray object
-imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1)
+imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1)
 imgarray
 ```
 
@@ -256,7 +256,7 @@ ome.tiff.file <- system.file("extdata", "xy_12bit__plant.ome.tiff",
 read.metadata(ome.tiff.file)
 
 # define ImageArray object
-imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 imgarray
 ```
 
@@ -362,9 +362,10 @@ file includes multiple resolutions that we can ask `ImageArray`
 object to include.
 
 ```{r he_imgarray}
-imgarray <- createImageArray(image_file,
-                             series = 1,
-                             resolution = 1:6)
+imgarray <- ImageArray(image_file,
+                       series = 1,
+                       resolution = 1:6)
+                             
 imgarray
 ```
 
