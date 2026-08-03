@@ -100,6 +100,7 @@ BFArray <- function(image.file, series, resolution) {
 BFArraySeed <- function(filepath, series, resolution, dim, axes, type) {
   S4Vectors::new2(
     "BFArraySeed",
+    filepath = filepath,
     series = series,
     resolution = resolution,
     dim = dim,
@@ -168,14 +169,12 @@ setMethod("type", "BFArraySeed", function(x) x@type)
     type(res) <- x@type
   } else {
     subset_list <- setNames(ind, x@axes)
-    print("art")
     res <- RBioFormats::read.image(
       file = x@filepath,
       series = x@series,
       resolution = x@resolution,
       subset = subset_list
     )
-    print("art")
     res <- EBImage::imageData(res)
     dim(res) <- len_ind
   }
