@@ -203,7 +203,7 @@ createListFromBFPath <- function(
   # make list
   image_list <- lapply(resolution(image), function(res) {
     BFArray(
-      BFPath(path(image), resolution = res)
+      BFPath(path(image), series = series(image), resolution = res)
     )
   })
   return(list(levels = image_list, 
@@ -376,14 +376,29 @@ createListFromList <- function(image,
                                axes = NULL,
                                n.levels = NULL, 
                                max.pixel.threshold = 700,
+                               engine = engine,
                                verbose = FALSE){
-  axes <- lapply(image, \(.) .guess_axes(., axes))
+  
+  # check arrays
+  img_dims <- lapply(image, function(img){
+    if(!is.array(img))
+      stop("Each element of the list should be an array")
+    length(dim(img))
+  })
+  all_equal <- all(
+    vapply(img_dims, identical, logical(1), length(dim(image[[1L]])))
+  )
+  if(!all_equal)
+    stop("All images must have identical dimensions")
+  
+  # check axes
+  axes <- lapply(image, \(.) .guess_axes(., axes, engine = engine))
   all_equal <- all(vapply(axes, identical, logical(1), axes[[1L]]))
   if(!all_equal)
     stop("All images must have identical axes")
+  
   return(list(levels = image, axes = axes[[1L]]))
 }
-  
   
 setOldClass("magick-image")
 setOldClass("bitmap")
@@ -456,6 +471,10 @@ ImageArray <- function(
     verbose = FALSE
 ) {
   
+  # override axes if scale is given
+  if(!is.null(scales))
+    axes <- .get_axes_from_scales(scales)
+  
   # create ImageArray from file path
   if (inherits(image, "character")) {
     if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
@@ -463,17 +482,11 @@ ImageArray <- function(
     } else {
       image <- read_image(image, engine = engine)
     }
-    # convert to bitmap array if integer, otherwise read as it is
+  # read arrays as magick or EBImage
   } else if(is.array(image)){
-    if (is.integer(image) & engine == "magick-image")
-      image <- array(as.raw(image), dim = c(3, 2, 1))
+    # guess the axes for arrays
     image <- read_image(image, engine = engine)
-  } else if(is.list(image)) {
-    lapply(image, function(img){
-      if(!is.array(img))
-        stop("Each element of the list should be an array")
-    })
-  }
+  } 
   
   # read image list
   image <- createImageList(
@@ -485,13 +498,10 @@ ImageArray <- function(
   )
   
   # construct ImageArray object
-  if(is.null(scales)){
-    scales <- .get_scales(image$levels, image$axes)
-  } else {
-    image$axes <- .get_axes_from_scales(scales)
-  }
   image$levels <- S4Vectors:::new_SimpleList_from_list("ImageList", 
                                                        image$levels)
+  if(is.null(scales))
+    scales <- .get_scales(image$levels, image$axes)
   S4Vectors::new2(
     "ImageArray", 
     levels = image$levels,
@@ -687,6 +697,79 @@ writeImageArray <- function(
 # Utils ####
 ####
 
+
+#' read_image
+#'
+#' @param image the image
+#' @param engine the package to use for each image layer: either
+#' \code{ebimage} or \code{magick}
+#'
+#' @importFrom magick image_read
+#' @importFrom EBImage readImage
+#'
+#' @noRd
+#' @keywords internal
+NULL
+
+#' @describeIn read_image read image
+#' @exportMethod read_image
+setMethod("read_image", "character", function(image, engine = "EBImage") {
+  switch(
+    engine,
+    `magick-image` = magick::image_read(image),
+    `EBImage` = EBImage::readImage(image)
+  )
+})
+
+#' @describeIn read_image read image
+#' @exportMethod read_image
+setMethod("read_image", "array", function(image, engine = "EBImage") {
+  # read array
+  switch(
+    engine,
+    `magick-image` = magick::image_read(.as_magick_bitmap(image)),
+    `EBImage` = EBImage::Image(image)
+  )
+})
+
+#' @describeIn read_image read image
+#' @exportMethod read_image
+setMethod("read_image", "bitmap", function(image, engine) {
+  magick::image_read(image)
+})
+
+.as_magick_bitmap <- function(x) {
+  d <- dim(x)
+  
+  if (length(d) == 2L)
+    dim(x) <- c(1L, d)
+  
+  if (length(dim(x)) != 3L || !dim(x)[1L] %in% c(1,3,4))
+    stop(
+      "Expected an (x, y) or (c, x, y) image with 1,3,4 channels.",
+      call. = FALSE
+    )
+  
+  if (is.logical(x))
+    x <- x * 255L
+  
+  if (!is.raw(x)) {
+    if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)))
+      stop("Pixel values must be finite.", call. = FALSE)
+    
+    if (is.double(x) && all(x >= 0 & x <= 1))
+      x <- round(x * 255)
+    
+    if (any(x < 0 | x > 255))
+      stop("Pixel values must be in [0, 1] or [0, 255].", call. = FALSE)
+    
+    storage.mode(x) <- "raw"
+  }
+  
+  x
+}
+
+
 #' @keywords internal
 #' @noRd
 .get_scales <- function(levels, axes){
@@ -720,17 +803,22 @@ writeImageArray <- function(
 #' @noRd
 .guess_axes <- function(
     image,
-    axes
+    axes = NULL, 
+    engine = "EBImage"
 ) {
   # We can guess axes for images, labels if 2D (with/without channels)
   ndim <- length(dim(image))
   if (is.null(axes)) {
     if (ndim %in% c(2, 3)) {
-      axes <- c("x", "y", if (ndim == 3) "c" else NULL)
+      axes <- switch(
+        engine,
+        `magick-image` = c(if (ndim == 3) "c" else NULL, "x", "y"),
+        `EBImage` = c("x", "y", if (ndim == 3) "c" else NULL)
+      )
     } else {
       stop(
         "axes must be provided. Can't be guessed beyond 2D images ",
-        "with or without channels!",
+        "(or 3D with channels)!",
         call. = FALSE
       )
     }

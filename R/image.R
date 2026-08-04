@@ -34,39 +34,3 @@ getImageInfo <- function(object) {
   imginfo <- list(width = dim_image["x"], height = dim_image["y"])
   as.data.frame(imginfo, row.names = NULL)
 }
-
-#' read_image
-#'
-#' @param image the image
-#' @param engine the package to use for each image layer: either
-#' \code{ebimage} or \code{magick}
-#'
-#' @importFrom magick image_read
-#' @importFrom EBImage readImage
-#'
-#' @noRd
-#' @keywords internal
-NULL
-
-#' @describeIn read_image read image
-#' @exportMethod read_image
-setMethod("read_image", "character", function(image, engine) {
-  switch(
-    engine,
-    `magick-image` = magick::image_read(image),
-    `EBImage` = EBImage::readImage(image)
-  )
-})
-
-#' @describeIn read_image read image
-#' @exportMethod read_image
-setMethod("read_image", "array", function(image, engine) {
-  if(inherits(image, "bitmap"))
-    engine <- "magick-image"
-  switch(
-    engine,
-    `magick-image` = magick::image_read(image),
-    `EBImage` = EBImage::Image(image)
-  )
-})
-

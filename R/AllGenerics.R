@@ -8,7 +8,7 @@ setGeneric("createImageList",
 setGeneric("scales", function(object, ...) standardGeneric("scales"))
 setGeneric("axes", function(object, ...) standardGeneric("axes"))
 setGeneric("read_image", 
-           function(image, engine) standardGeneric("read_image"))
+           function(image, ...) standardGeneric("read_image"))
 
 # generics of ImageArray manipulation
 setGeneric("crop", function(object, ...) standardGeneric("crop"))
