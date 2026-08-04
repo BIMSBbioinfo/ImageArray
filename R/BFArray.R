@@ -145,6 +145,7 @@ setMethod("type", "BFArraySeed", function(x) x@type)
 
 #' @importFrom EBImage imageData
 .extract_array_from_BFArraySeed <- function(x, index) {
+  
   # check RBioFormats
   if (!requireNamespace("RBioFormats")) {
     stop("Please install RBioFormats: BiocManager::install('RBioFormats')")
@@ -275,6 +276,19 @@ BFPath <- function(filepath, series = NULL, resolution = NULL) {
     resolution = resolution
   )
 }
+
+#' @importFrom S4Vectors coolcat
+#' @noRd
+setMethod(
+  f = "show",
+  signature = c("BFPath"),
+  definition = function(object) {
+    cat(class(x = object), "Object", "\n")
+    cat("Path: ", path(object), "\n")
+    cat("Series: ", series(object), "\n")
+    cat("Resolutions: ", paste(resolution(object), collapse = ","), "\n")
+  }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### getters
