@@ -284,9 +284,9 @@ setMethod(
   signature = c("BFPath"),
   definition = function(object) {
     cat(class(x = object), "Object", "\n")
-    cat("Path: ", path(object), "\n")
-    cat("Series: ", series(object), "\n")
-    cat("Resolutions: ", paste(resolution(object), collapse = ","), "\n")
+    cat("Path:", path(object), "\n")
+    cat("Series:", series(object), "\n")
+    cat("Resolutions:", paste(resolution(object), collapse = ","), "\n")
   }
 )
 
