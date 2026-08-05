@@ -44,7 +44,7 @@ test_that("image array class", {
                                          array(1:25, dim = c(3,3))),
                            scales = list(c(b = 1, c = 1),
                                          c(x = 0.6, y = 0.6))), 
-    regexp = "Some axes are invalid"
+    regexp = "axes should include at least both x and y dimensions"
   )
   
 })

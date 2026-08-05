@@ -43,6 +43,10 @@
 #' meta,ImageArray-method
 #' axes
 #' axes,ImageArray-method
+#' axes<-
+#' axes<-,ImageArray-method
+#' scales
+#' scales,ImageArray-method
 #' realize
 #' realize,ImageArray-method
 #' as.raster
@@ -86,6 +90,9 @@
 #'                           name = "image",
 #'                           verbose = FALSE)
 #'
+#' # path
+#' path(imgarray)
+#' 
 #' # as.raster
 #' imgarray_raster <- as.raster(imgarray)
 #'
@@ -176,6 +183,22 @@ setMethod("type", "ImageArray", function(x) type(x[[1]]))
 #' @returns length of ImageArray object
 setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 
+#' @describeIn ImageArray-methods get axes metadata of the ImageArray object
+#' @exportMethod axes
+setMethod("axes", "ImageArray", function(object) object@axes)
+
+#' @describeIn ImageArray-methods get axes metadata of the ImageArray object
+#' @exportMethod axes<-
+setMethod("axes<-", "ImageArray", function(object, ..., value){
+  value <- .check_axes(object[[1]], axes = value)
+  object@axes <- value
+  object
+})
+
+#' @describeIn ImageArray-methods get scales metadata of the ImageArray object
+#' @exportMethod scales
+setMethod("scales", "ImageArray", function(object) object@scales)
+
 ####
 # Create/Write ####
 ####
@@ -234,20 +257,30 @@ createListFromBFPath <- function(
 createListFromMagick <- function(
   image,
   axes = NULL,
+  scales = NULL,
   n.levels = NULL,
   max.pixel.threshold = 700,
   verbose = FALSE
 ) {
+  # get axes, magick only accepts XY or CXY
+  image_data <- magick::image_data(image)
+  axes <- .check_axes(image_data, axes = axes, engine = "magick-image")
+  temp_axes <- c(axes, if(!"c" %in% axes) "c" else NULL)
+  img_perm_forward <- match(temp_axes, .MAGICK_AXES)
+  img_perm_backward <- match(.MAGICK_AXES, temp_axes)
+  if (verbose) 
+    .img_create_msg(dim(image), 1)
+  
   # check image
-  if (inherits(image, "bitmap")) {
+  if (inherits(image, "bitmap"))
     image <- magick::image_read(image)
-  }
 
   # get image info
   image_info <- magick::image_info(image)
   dim_image <- c(image_info$width, image_info$height)
 
   # levels
+  # TODO: replace with .check_nlevels()
   if (is.null(n.levels)) {
     # get image size and resolution
     image_maxsize_id <- which.max(dim_image)
@@ -260,33 +293,31 @@ createListFromMagick <- function(
   } else if (n.levels < 1) {
     stop("'n.levels' has to be 1 or a larger integer value!")
   }
-
-  # get axes, EBImage accepts XY or XYC
-  axes <- c("c", "x", "y")
-  if (verbose) {
-    .img_create_msg(dim(image), 1)
-  }
   
-  # create image levels
-  image_data <- magick::image_data(image, channels = "rgb")
+  # remaining levels
   storage.mode(image_data) <- "integer"
-  image_list <- list(DelayedArray::DelayedArray(as.array(image_data)))
+  new_dim <- setNames(dim(image_data), .MAGICK_AXES)
+  image_data <- as.array(image_data)
+  image_data <- array(image_data, dim = unname(new_dim[axes]))
+  image_list <- list(DelayedArray::DelayedArray(image_data))
   if (n.levels > 1) {
     cur_image <- image
     for (i in 2:n.levels) {
       dim_image <- ceiling(dim_image / 2)
-      if (verbose) {
+      if (verbose)
         .img_create_msg(dim_image, 1)
-      }
       cur_image <- magick::image_resize(
         cur_image,
         geometry = magick::geometry_size_percent(50),
         filter = "Gaussian"
       )
-      image_data <- magick::image_data(cur_image, channels = "rgb")
+      image_data <- as.array(magick::image_data(cur_image))
       storage.mode(image_data) <- "integer"
+      image_data <- aperm(image_data, perm = img_perm_forward)
+      new_dim <- setNames(dim(image_data), temp_axes)
+      image_data <- array(image_data, dim = unname(new_dim[axes]))
       image_list[[i]] <-
-        DelayedArray::DelayedArray(as.array(image_data))
+        DelayedArray::DelayedArray(image_data)
     }
   }
 
@@ -319,11 +350,21 @@ createListFromEBImage <- function(
   max.pixel.threshold = 700,
   verbose = FALSE
 ) {
+  
+  # get axes, EBImage accepts images starting with XY
+  axes <- .check_axes(image, axes = axes)
+  EBImage_axes <- c("x", "y", axes[!axes %in% c("x", "y")])
+  img_perm_forward <- match(axes, EBImage_axes)
+  img_perm_backward <- match(EBImage_axes, axes)
+  if (verbose) 
+    .img_create_msg(dim(image), 1)
+  
   # get and image info
-  image_info <- dim(image)
-  dim_image <- c(image_info[1], image_info[2])
+  image_info <- setNames(dim(image), axes)
+  dim_image <- c(image_info["x"], image_info["y"])
 
   # levels
+  # TODO: replace with .check_nlevels()
   if (is.null(n.levels)) {
     # get image size and resolution
     image_maxsize_id <- which.max(dim_image)
@@ -337,32 +378,20 @@ createListFromEBImage <- function(
     stop("'n.levels' has to be 1 or a larger integer value!")
   }
 
-  # check dim
-  .check_dim(image)
-
-  # get axes, EBImage accepts XY or XYC
-  axes <- c("x", "y", "c")
-  if (verbose) .img_create_msg(dim_image, 1)
-  img_perm <- if (length(dim(image)) == 2) c(1, 2) else c(1, 2, 3)
-  axes <- axes[img_perm]
-  img_perm <- stats::setNames(img_perm, axes)
-  img <- aperm(image, img_perm)
-  
   # create image levels
-  image_list <- list(DelayedArray::DelayedArray(img))
+  image_list <- list(DelayedArray::DelayedArray(as.array(image)))
   if (n.levels > 1) {
-    cur_image <- image
+    cur_image <- aperm(image, perm = img_perm_forward)
     for (i in 2:n.levels) {
       dim_image <- ceiling(dim_image / 2)
-      if (verbose) {
+      if (verbose)
         .img_create_msg(dim_image, i)
-      }
       cur_image <- EBImage::resize(
         cur_image,
-        w = dim_image[1],
-        h = dim_image[2]
+        w = dim_image["x"],
+        h = dim_image["y"]
       )
-      cur_img <- aperm(cur_image, img_perm)
+      cur_img <- aperm(cur_image, perm = img_perm_backward)
       image_list[[i]] <-
         DelayedArray::DelayedArray(cur_img)
     }
@@ -376,7 +405,7 @@ createListFromList <- function(image,
                                axes = NULL,
                                n.levels = NULL, 
                                max.pixel.threshold = 700,
-                               engine = engine,
+                               engine = "EBImage",
                                verbose = FALSE){
   
   # check arrays
@@ -392,7 +421,7 @@ createListFromList <- function(image,
     stop("All images must have identical dimensions")
   
   # check axes
-  axes <- lapply(image, \(.) .guess_axes(., axes, engine = engine))
+  axes <- lapply(image, \(.) .check_axes(., axes, engine = engine))
   all_equal <- all(vapply(axes, identical, logical(1), axes[[1L]]))
   if(!all_equal)
     stop("All images must have identical axes")
@@ -434,7 +463,7 @@ setMethod("createImageList", "list", createListFromList)
 #'  If \code{n.levels} is provided, this parameter will be ignored.
 #' @param scales a list of named numeric vectors where names are a  
 #'  subset of \code{axes} and values are associated with scales 
-#'  of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+#'  of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
 #'  information. When provided, \code{axes} will be overwritten. 
 #' @param engine the package to use for each image layer: either
 #'  \code{EBImage} or \code{magick-image}
@@ -471,7 +500,7 @@ ImageArray <- function(
     verbose = FALSE
 ) {
   
-  # override axes if scale is given
+  # overwrite axes if scales are given
   if(!is.null(scales))
     axes <- .get_axes_from_scales(scales)
   
@@ -485,7 +514,8 @@ ImageArray <- function(
   # read arrays as magick or EBImage
   } else if(is.array(image)){
     # guess the axes for arrays
-    image <- read_image(image, engine = engine)
+    axes <- .check_axes(image, axes = axes, engine = engine)
+    image <- read_image(image, axes = axes, engine = engine)
   } 
   
   # read image list
@@ -524,17 +554,12 @@ ImageArray <- function(
 #' the output path.
 #' @param replace Should the existing file be
 #' removed or not
-#' @param n.levels the number of levels if the image supposed to be
-#' pyramidal.
 #' @param chunkdim The dimensions of the chunks
 #' to use for writing the data to disk.
 #' @param level The compression level to use for
 #' writing the data to disk.
-#' @param engine the package to use for each image layer: either
-#' \code{EBImage} or \code{magick-image}
 #' @param verbose verbose
-#' @param ... additional parameters passed to
-#' \link[ImageArray]{ImageArray}.
+#' @param ... additional parameters passed to \link[ImageArray]{ImageArray}.
 #'
 #' @importFrom HDF5Array writeHDF5Array
 #' @importFrom ZarrArray writeZarrArray
@@ -566,10 +591,8 @@ writeImageArray <- function(
   name = "",
   format = NULL,
   replace = FALSE,
-  n.levels = NULL,
   chunkdim = NULL,
   level = NULL,
-  engine = "EBImage",
   verbose = FALSE,
   ...
 ) {
@@ -580,9 +603,8 @@ writeImageArray <- function(
   if (!inherits(image, "ImageArray")) {
     image_list <- ImageArray(
       image,
-      n.levels = n.levels,
       verbose = verbose,
-      engine = engine
+      ...
     )
   } else {
     image_list <- image
@@ -699,6 +721,8 @@ writeImageArray <- function(
 
 
 #' read_image
+#' 
+#' read an image using magick or EBImage
 #'
 #' @param image the image
 #' @param engine the package to use for each image layer: either
@@ -712,8 +736,9 @@ writeImageArray <- function(
 NULL
 
 #' @describeIn read_image read image
-#' @exportMethod read_image
-setMethod("read_image", "character", function(image, engine = "EBImage") {
+setMethod("read_image", 
+          "character", 
+          function(image, engine = "EBImage") {
   switch(
     engine,
     `magick-image` = magick::image_read(image),
@@ -722,37 +747,52 @@ setMethod("read_image", "character", function(image, engine = "EBImage") {
 })
 
 #' @describeIn read_image read image
-#' @exportMethod read_image
-setMethod("read_image", "array", function(image, engine = "EBImage") {
-  # read array
+setMethod("read_image", 
+          "array", 
+          function(image, axes = NULL, engine = "EBImage") {
   switch(
     engine,
-    `magick-image` = magick::image_read(.as_magick_bitmap(image)),
+    `magick-image` = magick::image_read(.as_magick_bitmap(image, axes)),
     `EBImage` = EBImage::Image(image)
   )
 })
 
 #' @describeIn read_image read image
-#' @exportMethod read_image
-setMethod("read_image", "bitmap", function(image, engine) {
+setMethod("read_image", 
+          "bitmap", 
+          function(image, axes = NULL, engine) {
   magick::image_read(image)
 })
 
-.as_magick_bitmap <- function(x) {
+.as_magick_bitmap <- function(x, axes = NULL) {
   d <- dim(x)
+  msg <- "Expected an (x, y) or (c, x, y) image with 1,3,4 channels."
   
+  # guess axes if not provided
+  if(is.null(axes))
+    axes <- .check_axes(x, axes = axes, engine = "magick-image")
+  
+  # get permutation to read as magick
+  if(!length(axes) %in% c(2L, 3L) || !length(d) %in% c(2L, 3L)) 
+    stop(msg, call. = FALSE)
+  magick_axes <- c(if(length(d) == 3L) "c" else NULL, "x", "y")
+  img_perm <- match(magick_axes, axes)
+  x <- aperm(x, perm = img_perm)
+  
+  # add extra dimension if two dimensional
   if (length(d) == 2L)
     dim(x) <- c(1L, d)
   
+  # check dimension
   if (length(dim(x)) != 3L || !dim(x)[1L] %in% c(1,3,4))
     stop(
       "Expected an (x, y) or (c, x, y) image with 1,3,4 channels.",
       call. = FALSE
     )
   
+  # conversions
   if (is.logical(x))
     x <- x * 255L
-  
   if (!is.raw(x)) {
     if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)))
       stop("Pixel values must be finite.", call. = FALSE)
@@ -801,20 +841,25 @@ setMethod("read_image", "bitmap", function(image, engine) {
 
 #' @keywords internal
 #' @noRd
-.guess_axes <- function(
+.check_axes <- function(
     image,
     axes = NULL, 
     engine = "EBImage"
 ) {
   # We can guess axes for images, labels if 2D (with/without channels)
-  ndim <- length(dim(image))
+  d <- dim(image)
+  ndim <- length(d)
   if (is.null(axes)) {
     if (ndim %in% c(2, 3)) {
-      axes <- switch(
-        engine,
-        `magick-image` = c(if (ndim == 3) "c" else NULL, "x", "y"),
-        `EBImage` = c("x", "y", if (ndim == 3) "c" else NULL)
-      )
+      if(inherits(image, "bitmap")){
+        axes <- c("c", "x", "y") 
+      } else {
+        axes <- switch(
+          engine,
+          `magick-image` = c(if (ndim == 3) "c" else NULL, "x", "y"),
+          `EBImage` = c("x", "y", if (ndim == 3) "c" else NULL)
+        ) 
+      }
     } else {
       stop(
         "axes must be provided. Can't be guessed beyond 2D images ",
@@ -822,24 +867,18 @@ setMethod("read_image", "bitmap", function(image, engine) {
         call. = FALSE
       )
     }
-  } else {
-    if (is.character(axes) && length(axes) == 1L) {
-      axes <- strsplit(axes, "", fixed = TRUE)[[1]]
-    }
-    if (length(axes) != ndim) {
-      stop(
-        sprintf(
-          "axes length (%d) must match number of dimensions (%d)",
-          length(axes),
-          ndim
-        ),
-        call. = FALSE
-      )
-    }
   }
   
-  # axes length should match # of dim
-  if (!is.null(ndim) && length(axes) != ndim) {
+  # should have XY at least
+  if(!all(c("x", "y") %in% axes))
+    stop("axes should include at least both x and y dimensions!")
+  
+  # axes length should match # of dim, also consider the image is bitmap
+  if(inherits(image, "bitmap")){
+    if(!any(axes %in% .MAGICK_AXES))
+      stop("axes should have at least xy or cxy dimensions ", 
+           "when used with magick!")
+  } else if (!is.null(ndim) && length(axes) != ndim) {
     stop(
       sprintf(
         "axes length (%d) must match number of dimensions (%d)",
@@ -855,6 +894,11 @@ setMethod("read_image", "bitmap", function(image, engine) {
   if (length(diff_axes)) {
     stop("Some axes are invalid: ", paste(diff_axes, collapse = ","))
   }
+  
+  # check magick axes
+  other_axes <- setdiff(axes, .MAGICK_AXES)
+  if(engine == "magick-image" && length(other_axes) > 1)
+    stop("magick images should have only the c, x, and y axes!")
   
   # duplicated axes
   ind_dup <- which(table(axes) > 1)

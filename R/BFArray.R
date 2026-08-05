@@ -7,6 +7,7 @@
 #' A function for creating objects of BFArray class
 #'
 #' @param image A BFPath object
+#' @param x,object A BFArray or BFArraySeed object
 #'
 #' @name BFArray-methods
 #' @rdname BFArray-methods
@@ -211,9 +212,16 @@ setMethod("DelayedArray", "BFArraySeed", function(seed) {
 #' @param resolution the resolution IDs of the
 #' pyramidal image, typical an integer starting from 1
 #'
-#' @name BFArray-methods
-#' @rdname BFArray-methods
+#' @name BFPath
+#' @rdname BFPath
 #'
+#' @aliases
+#' resolution
+#' resolution,BFPath-method
+#' path,BFPath-method
+#' series
+#' series,BFPath-method
+#' 
 #' @importFrom S4Vectors new2
 #' 
 #' @export
@@ -228,6 +236,7 @@ setMethod("DelayedArray", "BFArraySeed", function(seed) {
 #' bfp <- BFPath(img.file, series = 1, resolution = 2)                         
 #' series(bfp)
 #' resolution(bfp)
+#' path(bfp)
 BFPath <- function(filepath, series = NULL, resolution = NULL) {
   
   # check RBioFormats
@@ -294,11 +303,14 @@ setMethod(
 ### getters
 ###
 
+#' @describeIn BFPath series metadata of BFPath object
 #' @exportMethod series
 setMethod("series", "BFPath", function(x) x@series)
 
+#' @describeIn BFPath resolution metadata of BFPath object
 #' @exportMethod resolution
 setMethod("resolution", "BFPath", function(x) x@resolution)
 
+#' @describeIn BFPath path method for BFPath object
 #' @exportMethod path
 setMethod("path", "BFPath", function(object, ...) object@filepath)

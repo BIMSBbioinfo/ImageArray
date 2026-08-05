@@ -89,15 +89,6 @@ is.sequential <- function(x) {
   x
 }
 
-.check_dim <- function(object) {
-  if (!(length(dim(object)) %in% c(2, 3))) {
-    stop(
-      "For now, ImageArray only supports only 2D images ",
-      "(and 3D images with channels) !!"
-    )
-  }
-}
-
 # based on check_index() from Huber-group-EMBL/Rarr
 #' @keywords internal
 .check_indices <- function(index, dim, ax) {
@@ -203,6 +194,10 @@ is.sequential <- function(x) {
 #' @keywords internal
 #' @noRd
 .AXES <- c("c", "y", "x", "z", "t")
+
+#' @keywords internal
+#' @noRd
+.MAGICK_AXES <- c("c", "x", "y")
 
 #' @keywords internal
 #' @noRd

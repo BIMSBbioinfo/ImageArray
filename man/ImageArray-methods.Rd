@@ -15,6 +15,10 @@
 \alias{meta,ImageArray-method}
 \alias{axes}
 \alias{axes,ImageArray-method}
+\alias{axes<-}
+\alias{axes<-,ImageArray-method}
+\alias{scales}
+\alias{scales,ImageArray-method}
 \alias{realize}
 \alias{realize,ImageArray-method}
 \alias{as.raster}
@@ -24,26 +28,33 @@
 \alias{extent}
 \alias{extent,ImageArray-method}
 \alias{[,ImageArray,ANY,ANY,ANY-method}
+\alias{[[,ImageArray,numeric,ANY-method}
+\alias{[[<-,ImageArray,numeric,ANY,ANY-method}
 \alias{dim,ImageArray-method}
 \alias{type,ImageArray-method}
 \alias{length,ImageArray-method}
 \alias{as.raster.ImageArray}
 \alias{aperm,ImageArray-method}
-\alias{scales,ImageArray-method}
 \alias{path<-,ImageArray-method}
 \title{Methods for ImageArray}
 \usage{
 \S4method{[}{ImageArray,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
-\S4method{[[}{ImageArray,numeric}(x, i)
+\S4method{[[}{ImageArray,numeric,ANY}(x, i)
 
-\S4method{[[}{ImageArray,numeric}(x, i, j, ...) <- value
+\S4method{[[}{ImageArray,numeric,ANY,ANY}(x, i, j, ...) <- value
 
 \S4method{dim}{ImageArray}(x)
 
 \S4method{type}{ImageArray}(x)
 
 \S4method{length}{ImageArray}(x)
+
+\S4method{axes}{ImageArray}(object)
+
+\S4method{axes}{ImageArray}(object, ...) <- value
+
+\S4method{scales}{ImageArray}(object)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -56,10 +67,6 @@
 \S4method{modulate}{ImageArray}(object, brightness)
 
 \S4method{crop}{ImageArray}(object, index)
-
-\S4method{axes}{ImageArray}(object)
-
-\S4method{scales}{ImageArray}(object)
 
 \S4method{extent}{ImageArray}(x)
 
@@ -115,7 +122,7 @@ for \code{ImageArray} objects
 \item \code{x[[i}: Layer access
 for \code{ImageArray} objects
 
-\item \code{`[[`(x = ImageArray, i = numeric) <- value}: Layer access
+\item \code{`[[`(x = ImageArray, i = numeric, j = ANY) <- value}: Layer access
 for \code{ImageArray} objects
 
 \item \code{dim(ImageArray)}: dimensions of an ImageArray
@@ -123,6 +130,12 @@ for \code{ImageArray} objects
 \item \code{type(ImageArray)}: dimensions of an ImageArray
 
 \item \code{length(ImageArray)}: length of an ImageArray
+
+\item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
+
+\item \code{axes(ImageArray) <- value}: get axes metadata of the ImageArray object
+
+\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{realize(ImageArray)}: realize the array
 
@@ -135,10 +148,6 @@ for \code{ImageArray} objects
 \item \code{modulate(ImageArray)}: modulate image
 
 \item \code{crop(ImageArray)}: cropping image
-
-\item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
-
-\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{extent(ImageArray)}: extent
 
@@ -180,6 +189,9 @@ imgarray <- writeImageArray(img.file,
                           output = output_h5,
                           name = "image",
                           verbose = FALSE)
+
+# path
+path(imgarray)
 
 # as.raster
 imgarray_raster <- as.raster(imgarray)

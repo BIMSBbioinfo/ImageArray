@@ -8,6 +8,7 @@ setMethod("aperm", signature = "ImageArray", function(a, perm) {
   for (i in seq_along(a@levels)) {
     a[[i]] <- aperm(a[[i]], perm = perm)
   }
+  axes(a) <- axes(a)[perm]
   a
 })
 
@@ -42,8 +43,6 @@ setMethod("modulate", signature = "ImageArray", function(object, brightness) {
 #' @importFrom stats setNames
 #' @exportMethod crop
 setMethod("crop", signature = "ImageArray", function(object, index) {
-  # check_dim
-  .check_dim(object)
 
   # get axes
   ax <- axes(object)
@@ -86,14 +85,6 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
 
   object
 })
-
-#' @describeIn ImageArray-methods get axes metadata of the ImageArray object
-#' @exportMethod axes
-setMethod("axes", "ImageArray", function(object) object@axes)
-
-#' @describeIn ImageArray-methods get scales metadata of the ImageArray object
-#' @exportMethod scales
-setMethod("scales", "ImageArray", function(object) object@scales)
 
 ####
 # Utils ####

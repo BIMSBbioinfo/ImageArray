@@ -34,7 +34,7 @@ If \code{n.levels} is provided, this parameter will be ignored.}
 
 \item{scales}{a list of named numeric vectors where names are a
 subset of \code{axes} and values are associated with scales 
-of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
+of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
 information. When provided, \code{axes} will be overwritten.}
 
 \item{engine}{the package to use for each image layer: either

@@ -725,9 +725,6 @@ setMethod("translation",
 .flipflop <- function(object, direction = "x") {
   ax <- axes(object)
   
-  # check dim
-  .check_dim(object)
-  
   # flip all
   for (i in seq_along(object@levels)) {
     img <- object[[i]]
