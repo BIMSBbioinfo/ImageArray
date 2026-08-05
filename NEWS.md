@@ -1,4 +1,4 @@
-# ImageArray 1.1.3
+# ImageArray 1.1.4
 
 ## New features
 
@@ -6,6 +6,11 @@
   constructor. 
 * `ImageArray` function now accepts arguments `axes` and `scales` that are
   default axes ordering and list of scaling vectors for each pyramid layers.
+
+# ImageArray 1.1.3
+
+## New features
+
 * Novel delayed (or lazy) transformations for image pyramids are introduced. 
   Available transformations are: Translation, scaling, rotation, and affine 
   (#45).
