@@ -68,7 +68,7 @@ dir.create(td <- tempfile())
 output <- file.path(td, "sample.h5")
 imgarray <- writeImageArray(img, 
                             output = output, 
-                            nlevels = 2)
+                            n.levels = 2)
 imgarray
 #> ImageArray Object (x,y) 
 #> Scales (2): (768,512) (384,256)

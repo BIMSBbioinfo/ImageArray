@@ -437,16 +437,18 @@ setMethod("createImageList", "list", createListFromList)
 #' @eval paste0("@param axes a character vector of axes names for images. 
 #'  Should be a subset of ", deparse(.AXES))
 #' @param n.levels the number of levels of the pyramidal image,
-#'  typical an integer starting from 1
+#'  typical an integer starting from 1. Will be ignored if \code{scales} is 
+#'  provided
 #' @param max.pixel.threshold the maximum width
 #'  and height pixel dimension that the lowest level of the image pyramid
 #'  should have, thus the image will be downscaled two folds until both width
 #'  and height is below the threshold. Default is 700 pixels.
-#'  If \code{n.levels} is provided, this parameter will be ignored.
+#'  Will be ignored if \code{n.levels} is provided
 #' @param scales a list of named numeric vectors where names are a  
 #'  subset of \code{axes} and values are associated with scales 
 #'  of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
-#'  information. When provided, \code{axes} will be overwritten. 
+#'  information. When provided, \code{axes}, \code{n.levels} and 
+#'  \code{max.pixel.threshold} will be overridden.  
 #' @param engine the package to use for each image layer: either
 #'  \code{EBImage} or \code{magick-image}
 #' @param series the series IDs of the pyramidal image,
@@ -541,7 +543,7 @@ createImageArray <- function(
     n.levels = NULL,
     series = NULL,
     resolution = NULL,
-    max.pixel.threshold,
+    max.pixel.threshold = max.pixel.threshold,
     engine = "EBImage",
     verbose = FALSE
 ) {
@@ -549,7 +551,7 @@ createImageArray <- function(
           "Please use 'ImageArray' instead!")
   ImageArray(image,
              n.levels = NULL,
-             max.pixel.threshold = 700,
+             max.pixel.threshold = max.pixel.threshold,
              engine = "EBImage",
              series = NULL,
              resolution = NULL,

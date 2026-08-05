@@ -26,18 +26,20 @@ containing the pixel intensities of an image.}
 Should be a subset of c("c", "y", "x", "z", "t")}
 
 \item{n.levels}{the number of levels of the pyramidal image,
-typical an integer starting from 1}
+typical an integer starting from 1. Will be ignored if \code{scales} is 
+provided}
 
 \item{max.pixel.threshold}{the maximum width
 and height pixel dimension that the lowest level of the image pyramid
 should have, thus the image will be downscaled two folds until both width
 and height is below the threshold. Default is 700 pixels.
-If \code{n.levels} is provided, this parameter will be ignored.}
+Will be ignored if \code{n.levels} is provided}
 
 \item{scales}{a list of named numeric vectors where names are a
 subset of \code{axes} and values are associated with scales 
 of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
-information. When provided, \code{axes} will be overwritten.}
+information. When provided, \code{axes}, \code{n.levels} and 
+\code{max.pixel.threshold} will be overridden.}
 
 \item{engine}{the package to use for each image layer: either
 \code{EBImage} or \code{magick-image}}
