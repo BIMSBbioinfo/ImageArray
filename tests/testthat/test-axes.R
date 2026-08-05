@@ -68,3 +68,23 @@ test_that("duplicate axes", {
     "axes should include at least both x and y dimensions!"
   )
 })
+
+test_that("get axes from scales", {
+  
+  scales <- list(c(x = 1, y = 1),
+                 c(x = 0.6, y = 0.6))
+  axes <- .get_axes_from_scales(scales)
+  expect_equal(axes, c("x", "y"))
+  
+  # scales should have a length
+  expect_error(
+    .get_axes_from_scales(list()),
+    "scales should have at least one vector of axes scales"
+  )
+  
+  # each element of scales should be named
+  expect_error(
+    .get_axes_from_scales(list(c())),
+    "Each vector in scales should be named!"
+  )
+})

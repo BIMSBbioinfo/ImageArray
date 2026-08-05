@@ -207,7 +207,7 @@ setMethod("scales", "ImageArray", function(object) object@scales)
 #'
 #' creates an object of BFArray class
 #'
-#' @param image the image
+#' @param image a BFPath object
 #' @param series the number of series if the image supposed to be
 #' pyramidal, or the the series IDs of the pyramidal image,
 #' typical an integer starting from 1
@@ -219,8 +219,9 @@ setMethod("scales", "ImageArray", function(object) object@scales)
 createListFromBFPath <- function(
   image,
   axes = NULL,
+  scales = NULL,
   n.levels = NULL,
-  max.pixel.threshold = 700,
+  max.pixel.threshold,
   verbose = FALSE
 ) {
   # make list
@@ -259,7 +260,7 @@ createListFromMagick <- function(
   axes = NULL,
   scales = NULL,
   n.levels = NULL,
-  max.pixel.threshold = 700,
+  max.pixel.threshold,
   verbose = FALSE
 ) {
   # get axes, magick only accepts XY or CXY
@@ -268,8 +269,6 @@ createListFromMagick <- function(
   temp_axes <- c(axes, if(!"c" %in% axes) "c" else NULL)
   img_perm_forward <- match(temp_axes, .MAGICK_AXES)
   img_perm_backward <- match(.MAGICK_AXES, temp_axes)
-  if (verbose) 
-    .img_create_msg(dim(image), 1)
   
   # check image
   if (inherits(image, "bitmap"))
@@ -279,36 +278,28 @@ createListFromMagick <- function(
   image_info <- magick::image_info(image)
   dim_image <- c(image_info$width, image_info$height)
 
-  # levels
-  # TODO: replace with .check_nlevels()
-  if (is.null(n.levels)) {
-    # get image size and resolution
-    image_maxsize_id <- which.max(dim_image)
-    image_maxsize <- dim_image[image_maxsize_id]
-
-    # get number of levels
-    # how many levels of power of 2 required to
-    # get a maximum pixel size of 700 on either width or height
-    n.levels <- ceiling(log2(image_maxsize / max.pixel.threshold)) + 1
-  } else if (n.levels < 1) {
-    stop("'n.levels' has to be 1 or a larger integer value!")
-  }
+  # number of levels
+  scales <- .check_scales(scales,
+                          axes,
+                          dim_image,
+                          n.levels, 
+                          max.pixel.threshold)
   
   # remaining levels
+  if (verbose) .img_create_msg(dim_image, 1)
   storage.mode(image_data) <- "integer"
   new_dim <- setNames(dim(image_data), .MAGICK_AXES)
   image_data <- as.array(image_data)
   image_data <- array(image_data, dim = unname(new_dim[axes]))
   image_list <- list(DelayedArray::DelayedArray(image_data))
-  if (n.levels > 1) {
+  if (length(scales) > 1) {
     cur_image <- image
-    for (i in 2:n.levels) {
-      dim_image <- ceiling(dim_image / 2)
-      if (verbose)
-        .img_create_msg(dim_image, 1)
+    for (i in 2:length(scales)) {
+      sc <- .magick_resize_scale(dim_image, scales[[i]])
+      if (verbose) .img_create_msg(sc, i)
       cur_image <- magick::image_resize(
         cur_image,
-        geometry = magick::geometry_size_percent(50),
+        geometry = sc,
         filter = "Gaussian"
       )
       image_data <- as.array(magick::image_data(cur_image))
@@ -346,8 +337,9 @@ createListFromMagick <- function(
 createListFromEBImage <- function(
   image,
   axes = NULL,
+  scales = NULL,
   n.levels = NULL,
-  max.pixel.threshold = 700,
+  max.pixel.threshold,
   verbose = FALSE
 ) {
   
@@ -356,40 +348,29 @@ createListFromEBImage <- function(
   EBImage_axes <- c("x", "y", axes[!axes %in% c("x", "y")])
   img_perm_forward <- match(axes, EBImage_axes)
   img_perm_backward <- match(EBImage_axes, axes)
-  if (verbose) 
-    .img_create_msg(dim(image), 1)
   
   # get and image info
   image_info <- setNames(dim(image), axes)
   dim_image <- c(image_info["x"], image_info["y"])
 
-  # levels
-  # TODO: replace with .check_nlevels()
-  if (is.null(n.levels)) {
-    # get image size and resolution
-    image_maxsize_id <- which.max(dim_image)
-    image_maxsize <- dim_image[image_maxsize_id]
-
-    # get number of levels
-    # how many levels of power of 2 required to
-    # get a maximum pixel size of 700 on either width or height
-    n.levels <- ceiling(log2(image_maxsize / max.pixel.threshold)) + 1
-  } else if (n.levels < 1) {
-    stop("'n.levels' has to be 1 or a larger integer value!")
-  }
+  # number of levels
+  scales <- .check_scales(scales,
+                          axes,
+                          dim_image,
+                          n.levels, 
+                          max.pixel.threshold)
 
   # create image levels
+  if (verbose) .img_create_msg(dim_image, 1)
   image_list <- list(DelayedArray::DelayedArray(as.array(image)))
-  if (n.levels > 1) {
+  if (length(scales) > 1) {
     cur_image <- aperm(image, perm = img_perm_forward)
-    for (i in 2:n.levels) {
-      dim_image <- ceiling(dim_image / 2)
-      if (verbose)
-        .img_create_msg(dim_image, i)
+    for (i in 2:length(scales)) {
+      if (verbose) .img_create_msg(dim_image, i)
       cur_image <- EBImage::resize(
         cur_image,
-        w = dim_image["x"],
-        h = dim_image["y"]
+        w = dim_image["x"]*scales[[i]]["x"],
+        h = dim_image["y"]*scales[[i]]["y"]
       )
       cur_img <- aperm(cur_image, perm = img_perm_backward)
       image_list[[i]] <-
@@ -403,15 +384,16 @@ createListFromEBImage <- function(
 
 createListFromList <- function(image,
                                axes = NULL,
+                               scales = NULL,
                                n.levels = NULL, 
-                               max.pixel.threshold = 700,
+                               max.pixel.threshold,
                                engine = "EBImage",
                                verbose = FALSE){
   
   # check arrays
   img_dims <- lapply(image, function(img){
-    if(!is.array(img))
-      stop("Each element of the list should be an array")
+    if(!is.array(img) && !is(img, "Array"))
+      stop("Each element of the list should be an array or Array object")
     length(dim(img))
   })
   all_equal <- all(
@@ -473,6 +455,13 @@ setMethod("createImageList", "list", createListFromList)
 #'  typical an integer starting from 1.
 #' @param verbose verbose
 #'
+#' @name ImageArray
+#' @rdname ImageArray
+#' 
+#' @aliases 
+#' createImageArray
+#' createImageArray,ImageArray-method
+#' 
 #' @importFrom methods new
 #' @importFrom DelayedArray DelayedArray
 #'
@@ -511,9 +500,9 @@ ImageArray <- function(
     } else {
       image <- read_image(image, engine = engine)
     }
+    
   # read arrays as magick or EBImage
   } else if(is.array(image)){
-    # guess the axes for arrays
     axes <- .check_axes(image, axes = axes, engine = engine)
     image <- read_image(image, axes = axes, engine = engine)
   } 
@@ -522,6 +511,7 @@ ImageArray <- function(
   image <- createImageList(
     image,
     axes = axes,
+    scales = scales,
     n.levels = n.levels,
     max.pixel.threshold = max.pixel.threshold,
     verbose = verbose
@@ -530,14 +520,40 @@ ImageArray <- function(
   # construct ImageArray object
   image$levels <- S4Vectors:::new_SimpleList_from_list("ImageList", 
                                                        image$levels)
+  
+  # get scales from list if not provided
   if(is.null(scales))
-    scales <- .get_scales(image$levels, image$axes)
+    scales <- .get_scales_from_levels(image$levels, image$axes)
+  
+  # create class
   S4Vectors::new2(
     "ImageArray", 
     levels = image$levels,
     axes = image$axes,
     scales = scales
   )
+}
+
+#' @describeIn ImageArray deprecated function
+#' @export
+createImageArray <- function(
+    image,
+    n.levels = NULL,
+    series = NULL,
+    resolution = NULL,
+    max.pixel.threshold,
+    engine = "EBImage",
+    verbose = FALSE
+) {
+  warning("'createImageArray' function is deprecated. ", 
+          "Please use 'ImageArray' instead!")
+  ImageArray(image,
+             n.levels = NULL,
+             max.pixel.threshold = 700,
+             engine = "EBImage",
+             series = NULL,
+             resolution = NULL,
+             verbose = FALSE)
 }
 
 #' writeImageArray
@@ -716,7 +732,7 @@ writeImageArray <- function(
 }
 
 ####
-# Utils ####
+# utils ####
 ####
 
 
@@ -809,10 +825,16 @@ setMethod("read_image",
   x
 }
 
+#' @keywords internal
+#' @noRd
+.magick_resize_scale <- function(dim_img, scales){
+  paste0(paste(round(dim_img*scales[c("x", "y")]), collapse = "x"),"!")
+}
+
 
 #' @keywords internal
 #' @noRd
-.get_scales <- function(levels, axes){
+.get_scales_from_levels <- function(levels, axes){
   msg <- "axes length does not match the dim of the array"
   d <- dim(levels[[1]])
   if(length(d) != length(axes)) stop(msg)
@@ -830,9 +852,24 @@ setMethod("read_image",
 
 #' @keywords internal
 #' @noRd
+.get_scales_from_nlevels <- function(n.levels, axes) {
+  if(!all(c("x", "y") %in% axes))
+    stop("axes should have at least x and y dimensions!")
+  lapply(seq_len(n.levels), \(i){
+    ax <- .TEMPLATE_SCALES[axes]
+    ax[c("x", "y")] <- ax[c("x", "y")] / 2^(i-1)
+    ax
+  })
+}
+
+#' @keywords internal
+#' @noRd
 .get_axes_from_scales <- function(scales){
   if(!is.list(scales))
     stop("scales must be a list!")
+  if(length(scales) < 1)
+    stop("scales should have at least one vector of axes scales")
+  
   for(sc in scales){
     if(is.null(names(sc))) stop("Each vector in scales should be named!")
   }
@@ -910,4 +947,32 @@ setMethod("read_image",
   }
   
   axes
+}
+
+#' @keywords internal
+#' @noRd
+.check_scales <- function(scales = NULL,
+                          axes,
+                          dim_image,
+                          n.levels = NULL, 
+                          max.pixel.threshold){
+  
+  # if scales are given, return
+  if(!is.null(scales)) {
+    scales
+  } else {
+    # get number of levels
+    # how many levels of power of 2 required to
+    # get a maximum pixel size of 700 on either width or height
+    if (is.null(n.levels)) {
+      image_maxsize_id <- which.max(dim_image)
+      image_maxsize <- dim_image[image_maxsize_id]
+      log2_ratio <- log2(image_maxsize / max.pixel.threshold)
+      n.levels <- pmax(0, ceiling(log2_ratio)) + 1
+      # if provided, should be an integer
+    } else if (n.levels < 1 || n.levels %% 1 != 0) {
+      stop("'n.levels' has to be 1 or a larger integer value!")
+    }
+    .get_scales_from_nlevels(n.levels, axes)
+  }
 }

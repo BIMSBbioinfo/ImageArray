@@ -52,3 +52,19 @@ setValidity("ImageArray", .validate_ImageArray)
 }
 
 setValidity("BFPath", .validate_BFPath)
+
+.validate_BFArraySeed <- function(object) {
+  
+  # check resolutions
+  if(length(series(object)) > 1)
+    stop("resolutions cannot be longer than 1!")
+  lapply(resolution(object), 
+         \(.) {
+           if(. %% 1 != 0)
+             stop("resolution values should be integers!")
+         })
+  
+  TRUE
+}
+
+setValidity("BFArraySeed", .validate_BFArraySeed)

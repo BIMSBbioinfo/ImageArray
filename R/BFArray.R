@@ -60,10 +60,16 @@ BFArray <- function(image) {
     },
     integer(2)
   )
+  
+  # check resolution
+  if(length(resolution(image)) > 1)
+    stop()
+  
+  # get shape
   series_index <-
     which(
       series_res_meta[1, ] == series(image) &
-        series_res_meta[2, ] == resolution(image)
+        series_res_meta[2, ] %in% resolution(image)
     )
   if (length(series_index) > 0) {
     shape <- vapply(

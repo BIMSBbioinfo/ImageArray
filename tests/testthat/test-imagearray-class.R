@@ -35,7 +35,7 @@ test_that("image array class", {
   )
   expect_error(
     imgarray <- ImageArray(image = list(array(1:25, dim = c(5,5))),
-                           scales = list(c(x = 1, y = 11),
+                           scales = list(c(x = 1, y = 1),
                                          c(x = 0.6, y = 0.6))), 
     regexp = "scales should be of the same length as levels!"
   )

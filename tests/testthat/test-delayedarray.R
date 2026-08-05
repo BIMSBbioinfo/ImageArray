@@ -7,14 +7,10 @@ output_zarr <- tempfile(fileext = ".zarr")
 
 # build image array
 set.seed(1)
-mat <- array(
+mat_image <- array(
   data = sample(1:13, 20 * 50 * 3, replace = TRUE),
   dim = c(20, 50, 3)
 )
-mat_raster <- as.raster(mat, max = 255)
-
-# read as magick object
-mat_image <- magick::image_read(mat_raster)
 
 test_that("path HDF5", {
   mat_list <- writeImageArray(

@@ -2,6 +2,8 @@
 % Please edit documentation in R/ImageArray.R
 \name{ImageArray}
 \alias{ImageArray}
+\alias{createImageArray}
+\alias{createImageArray,ImageArray-method}
 \title{ImageArray}
 \usage{
 ImageArray(
