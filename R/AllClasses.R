@@ -20,14 +20,21 @@ setClassUnion("matrix_array_Array",
   )
 )
 
+.BFPath <- setClass(
+  Class = "BFPath",
+  slots = c(
+    filepath = "character", 
+    series = "numeric",
+    resolution = "numeric"
+  )
+)
+
 .BFArraySeed <- setClass(
   "BFArraySeed",
-  contains = "Array",
+  contains = c("Array", "BFPath"),
   slots = c(
-    filepath = "character",
-    series = "numeric",
-    resolution = "numeric",
-    shape = "numeric",
+    axes = "character",
+    dim = "numeric",
     type = "character"
   )
 )

@@ -15,6 +15,10 @@
 \alias{meta,ImageArray-method}
 \alias{axes}
 \alias{axes,ImageArray-method}
+\alias{axes<-}
+\alias{axes<-,ImageArray-method}
+\alias{scales}
+\alias{scales,ImageArray-method}
 \alias{realize}
 \alias{realize,ImageArray-method}
 \alias{as.raster}
@@ -29,10 +33,8 @@
 \alias{dim,ImageArray-method}
 \alias{type,ImageArray-method}
 \alias{length,ImageArray-method}
-\alias{ImageArray}
 \alias{as.raster.ImageArray}
 \alias{aperm,ImageArray-method}
-\alias{scales,ImageArray-method}
 \alias{path<-,ImageArray-method}
 \title{Methods for ImageArray}
 \usage{
@@ -48,7 +50,11 @@
 
 \S4method{length}{ImageArray}(x)
 
-ImageArray(levels, axes, scales = NULL)
+\S4method{axes}{ImageArray}(object)
+
+\S4method{axes}{ImageArray}(object, ...) <- value
+
+\S4method{scales}{ImageArray}(object)
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -61,10 +67,6 @@ ImageArray(levels, axes, scales = NULL)
 \S4method{modulate}{ImageArray}(object, brightness)
 
 \S4method{crop}{ImageArray}(object, index)
-
-\S4method{axes}{ImageArray}(object)
-
-\S4method{scales}{ImageArray}(object)
 
 \S4method{extent}{ImageArray}(x)
 
@@ -90,17 +92,6 @@ ImageArray(levels, axes, scales = NULL)
 
 \item{drop}{ignored}
 
-\item{levels}{levels of the pyramid image, typically a vector of integers
-starting with 1}
-
-\item{axes}{a character vector of axes names for images. 
-Should be a subset of c("c", "y", "x", "z", "t")}
-
-\item{scales}{a list of named numeric vectors where names are a
-subset of \code{axes} and values are associated with scales 
-of these axes. See \link{https://ngff.openmicroscopy.org/} for more 
-information. When provided, \code{axes} will be overwritten.}
-
 \item{level}{level}
 
 \item{max.pixel.size}{maximum pixel size}
@@ -119,8 +110,6 @@ dim of the first level of the ImageArray object
 type of ImageArray object
 
 length of ImageArray object
-
-An ImageArray object
 }
 \description{
 Methods for \code{ImageArray} objects
@@ -142,9 +131,11 @@ for \code{ImageArray} objects
 
 \item \code{length(ImageArray)}: length of an ImageArray
 
-\item \code{ImageArray()}: ImageArray constructor method
+\item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
 
-A function for creating objects of ImageArray class
+\item \code{axes(ImageArray) <- value}: get axes metadata of the ImageArray object
+
+\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{realize(ImageArray)}: realize the array
 
@@ -157,10 +148,6 @@ A function for creating objects of ImageArray class
 \item \code{modulate(ImageArray)}: modulate image
 
 \item \code{crop(ImageArray)}: cropping image
-
-\item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
-
-\item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
 
 \item \code{extent(ImageArray)}: extent
 
@@ -175,7 +162,7 @@ library(EBImage)
 img.file <- system.file("images", "sample.png", package="EBImage")
 
 # create ImageArray
-imgarray <- createImageArray(img.file, n.levels = 3)
+imgarray <- ImageArray(img.file, n.levels = 3)
 
 # access layers
 imgarray[[1]]
@@ -202,6 +189,9 @@ imgarray <- writeImageArray(img.file,
                           output = output_h5,
                           name = "image",
                           verbose = FALSE)
+
+# path
+path(imgarray)
 
 # as.raster
 imgarray_raster <- as.raster(imgarray)

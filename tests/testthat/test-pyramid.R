@@ -19,7 +19,7 @@ mat_raster <- as.raster(mat, max = 255)
 mat_image <- magick::image_read(mat_raster)
 
 test_that("validate pyramid level", {
-  imgarray <- createImageArray(mat_image, n.levels = 3)
+  imgarray <- ImageArray(mat_image, n.levels = 3)
   dim_img <- dim(imgarray)
   expect_equal(dim(imgarray[[1]]), dim_img)
   expect_equal(dim(imgarray[[2]]), 

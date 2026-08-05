@@ -24,7 +24,7 @@
 #' getImageInfo(imgarray)
 #'
 #' # create ImageArray
-#' imgarray <- createImageArray(img.file, n.levels = 3)
+#' imgarray <- ImageArray(img.file, n.levels = 3)
 #' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
 #' getImageInfo(imgarray)
 #'
@@ -33,23 +33,4 @@ getImageInfo <- function(object) {
   dim_image <- stats::setNames(dim(object[[1]]), ax)
   imginfo <- list(width = dim_image["x"], height = dim_image["y"])
   as.data.frame(imginfo, row.names = NULL)
-}
-
-#' read_image
-#'
-#' @param image the image
-#' @param engine the package to use for each image layer: either
-#' \code{ebimage} or \code{magick}
-#'
-#' @importFrom magick image_read
-#' @importFrom EBImage readImage
-#'
-#' @noRd
-#' @keywords internal
-read_image <- function(image, engine) {
-  switch(
-    engine,
-    `magick-image` = magick::image_read(image),
-    `EBImage` = EBImage::readImage(image)
-  )
 }

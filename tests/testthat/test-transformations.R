@@ -11,7 +11,7 @@ f <- system.file("images", "sample.png", package = "EBImage")
 img_list <- list()
 
 # OME TIFF
-imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 img_list[["tiff"]] <- imgarray
 
 # HDF5

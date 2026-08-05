@@ -10,10 +10,8 @@ writeImageArray(
   name = "",
   format = NULL,
   replace = FALSE,
-  n.levels = NULL,
   chunkdim = NULL,
   level = NULL,
-  engine = "EBImage",
   verbose = FALSE,
   ...
 )
@@ -34,22 +32,15 @@ the output path.}
 \item{replace}{Should the existing file be
 removed or not}
 
-\item{n.levels}{the number of levels if the image supposed to be
-pyramidal.}
-
 \item{chunkdim}{The dimensions of the chunks
 to use for writing the data to disk.}
 
 \item{level}{The compression level to use for
 writing the data to disk.}
 
-\item{engine}{the package to use for each image layer: either
-\code{EBImage} or \code{magick-image}}
-
 \item{verbose}{verbose}
 
-\item{...}{additional parameters passed to
-\link[ImageArray]{createImageArray}.}
+\item{...}{additional parameters passed to \link[ImageArray]{ImageArray}.}
 }
 \value{
 An ImageArray object

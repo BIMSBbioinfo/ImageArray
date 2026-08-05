@@ -1,6 +1,3 @@
-#' @importFrom EBImage rotate flip flop
-NULL
-
 #' @name trans
 #' @rdname trans
 #' @title Transformations
@@ -28,7 +25,7 @@ NULL
 #' read.metadata(ome.tiff.file)
 #' 
 #' # define ImageArray object
-#' imgarray <- createImageArray(ome.tiff.file, series = 1, resolution = 1:2)
+#' imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1:2)
 #' 
 #' # translate image
 #' imgarray_trans <- translation(imgarray, shift = c(100,20))
@@ -727,9 +724,6 @@ setMethod("translation",
 #' @noRd
 .flipflop <- function(object, direction = "x") {
   ax <- axes(object)
-  
-  # check dim
-  .check_dim(object)
   
   # flip all
   for (i in seq_along(object@levels)) {
