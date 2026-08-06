@@ -1,8 +1,15 @@
 #' @importFrom S4Vectors SimpleList
-#' @importFrom methods setClass setClassUnion
+#' @importFrom methods setClass setClassUnion setOldClass
 #' @importClassesFrom S4Arrays Array
 NULL
 
+# magick classes
+setOldClass("magick-image")
+setOldClass("bitmap")
+setClassUnion(c("magick_class"), 
+              c("magick-image", "bitmap"))
+
+# array and matrix classes
 setClassUnion("matrix_array_Array", 
               c("matrix", "array", "Array"))
 

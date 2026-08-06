@@ -1,3 +1,14 @@
+# ImageArray 1.1.5
+
+## New features
+
+* Built-in `create_zarr` and `create_zarr_group` functions are now replaced
+  by the `Rarr::write_zarr_group` as of Rarr v2.1.27.
+  
+## Bug fixes
+
+* Fixing internal `read_image` method for reading magick bitmap image class.
+  
 # ImageArray 1.1.4
 
 ## New features
