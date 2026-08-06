@@ -410,11 +410,6 @@ createListFromList <- function(image,
   
   return(list(levels = image, axes = axes[[1L]]))
 }
-  
-setOldClass("magick-image")
-setOldClass("bitmap")
-setClassUnion(c("magick_class"), 
-              c("magick-image", "bitmap"))
 
 #' @noRd
 setMethod("createImageList", "magick_class", createListFromMagick)
@@ -582,6 +577,7 @@ createImageArray <- function(
 #' @importFrom HDF5Array writeHDF5Array
 #' @importFrom ZarrArray writeZarrArray
 #' @importFrom rhdf5 h5createFile h5createGroup
+#' @importFrom Rarr write_zarr_group
 #' @importFrom tools file_ext
 #' @import DelayedArray
 #'
@@ -677,10 +673,14 @@ writeImageArray <- function(
     },
     zarr = {
       if (!dir.exists(output)) {
-        create_zarr(store = output)
+        Rarr::write_zarr_group(zarr_path = output, 
+                               group = "", 
+                               zarr_version = 2L)
       }
       if (!name %in% c("", "/")) {
-        create_zarr_group(output, name)
+        Rarr::write_zarr_group(zarr_path = output, 
+                               group = name, 
+                               zarr_version = 2L)
       }
     },
     `in-memory` = {
