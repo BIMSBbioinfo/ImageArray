@@ -202,3 +202,19 @@ is.sequential <- function(x) {
 #' @keywords internal
 #' @noRd
 .TEMPLATE_SCALES <- c(c = 1, y = 1, x = 1, z = 1, t = 0.1)
+
+#' @keywords internal
+#' @noRd
+.PYRAMID_FORMATS <- c(
+  ".ome.tiff",    # OME-TIFF pyramidal TIFF variants (OME-TIFF and related) 
+  ".ome.tif",
+  ".ome.tf2",
+  ".ome.tf8",
+  ".ome.btf",
+  ".svs",         # Aperio SVS
+  ".afi",         # Aperio AFI
+  ".ndpi",        # Hamamatsu NDPI
+  ".ndpis",       # Hamamatsu NDPI variants
+  ".qptiff",      # CODEX ?
+  ".qptif"        # CODEX ?
+)

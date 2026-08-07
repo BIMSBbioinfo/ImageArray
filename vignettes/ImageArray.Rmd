@@ -240,6 +240,10 @@ imgarray <- ImageArray(ome.tiff.file, series = 1, resolution = 1)
 imgarray
 ```
 
+`r Biocpkg("ImageArray")` is also capable of reading other BioFormats 
+compatible image formats (e.g. qptiff, svs, ). For more information, visit the [Supported Formats](https://bio-formats.readthedocs.io/en/v8.3.0/supported-formats.html)
+webpage of BioFormats. 
+
 # Image Transformations
 
 `r Biocpkg("ImageArray")` provides image transformation functions that operate 
