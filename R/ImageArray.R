@@ -492,7 +492,9 @@ ImageArray <- function(
   
   # create ImageArray from file path
   if (inherits(image, "character")) {
-    if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
+    pyramid_formats <- paste0(gsub("\\.", "\\\\.", .PYRAMID_FORMATS), 
+                              "$", collapse = "|")
+    if (grepl(pyramid_formats, image, ignore.case = TRUE)) {
       image <- BFPath(image, series, resolution)
     } else {
       image <- read_image(image, engine = engine)
