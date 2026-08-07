@@ -18,6 +18,24 @@ setClassUnion("matrix_array_Array",
   contains="SimpleList",
   prototype=prototype(elementType="matrix_array_Array"))
 
+#' @title ImageArray class
+#'
+#' @description
+#' An S4 container for a multi-resolution (pyramidal) image, holding the
+#' pyramid levels together with their axis names and scales. Objects are
+#' created with \code{\link{ImageArray}}.
+#'
+#' @slot levels an \code{ImageList} of pyramid levels, ordered from the
+#'   highest to the lowest resolution
+#' @slot axes a character vector of axis names, a subset of
+#'   \code{c("c", "y", "x", "z", "t")}, of the same length as the number of
+#'   dimensions of every level
+#' @slot scales a list of named numeric vectors, one per level, where names
+#'   are a subset of \code{axes} and values are the scales of these axes. See
+#'   \url{https://ngff.openmicroscopy.org/} for more information. 
+#'
+#' @keywords internal
+#' @exportClass ImageArray
 .ImageArray <- setClass(
   Class = "ImageArray",
   slots = c(
