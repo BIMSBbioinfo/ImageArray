@@ -1,3 +1,11 @@
+# ImageArray 1.1.6
+
+## New features
+
+* `ImageArray` function now accepts Bioformats compatible image pyramid
+  formats beyond ome.tiff and qptiff. See https://bio-formats.readthedocs.io/en/latest/supported-formats.html 
+  for more information.
+  
 # ImageArray 1.1.5
 
 ## New features

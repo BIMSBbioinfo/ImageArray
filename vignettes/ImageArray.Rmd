@@ -241,7 +241,8 @@ imgarray
 ```
 
 `r Biocpkg("ImageArray")` is also capable of reading other BioFormats 
-compatible image formats (e.g. qptiff, svs, ). For more information, visit the [Supported Formats](https://bio-formats.readthedocs.io/en/v8.3.0/supported-formats.html)
+compatible image formats (e.g. qptiff, svs). For more information, visit the 
+[Supported Formats](https://bio-formats.readthedocs.io/en/v8.3.0/supported-formats.html)
 webpage of BioFormats. 
 
 # Image Transformations
