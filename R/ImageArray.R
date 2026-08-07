@@ -234,6 +234,39 @@ createListFromBFPath <- function(
          axes = tolower(axes(image_list[[1]]))))
 }
 
+#' createListFromBFPath
+#'
+#' creates an object from OZPath object
+#'
+#' @param image a OZPath object
+#' @param resolution the resolution IDs of the pyramidal
+#' image, typical an integer starting from 1
+#' @param verbose verbose
+#' 
+#' @importFrom ZarrArray ZarrArray
+#'
+#' @noRd
+createListFromOZPath <- function(
+    image,
+    axes = NULL,
+    scales = NULL,
+    n.levels = NULL,
+    max.pixel.threshold,
+    verbose = FALSE
+) {
+  # make list
+  image_list <- lapply(resolution(image), function(res) {
+    ZarrArray::ZarrArray(file.path(path(image), res))
+  })
+  
+  # axes
+  axes <- .check_axes(image_list[[1]], axes = axes)
+  
+  # return
+  return(list(levels = image_list, 
+              axes = axes))
+}
+
 #' createListFromMagick
 #'
 #' creates an object of ImageArray class from magick image
@@ -421,6 +454,9 @@ setMethod("createImageList", "Image", createListFromEBImage)
 setMethod("createImageList", "BFPath", createListFromBFPath)
 
 #' @noRd
+setMethod("createImageList", "OZPath", createListFromOZPath)
+
+#' @noRd
 setMethod("createImageList", "list", createListFromList)
 
 #' ImageArray
@@ -494,6 +530,8 @@ ImageArray <- function(
   if (inherits(image, "character")) {
     if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
       image <- BFPath(image, series, resolution)
+    } else if (grepl(".ome.zarr", image)) {
+      image <- OZPath(image, resolution)
     } else {
       image <- read_image(image, engine = engine)
     }

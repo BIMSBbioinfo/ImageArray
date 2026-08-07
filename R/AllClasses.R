@@ -51,3 +51,11 @@ setClassUnion("matrix_array_Array",
   contains = c("DelayedArray"),
   slots = c(seed = "BFArraySeed")
 )
+
+.OZPath <- setClass(
+  Class = "OZPath",
+  slots = c(
+    filepath = "character",
+    resolution = "character"
+  )
+)
