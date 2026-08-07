@@ -22,8 +22,9 @@ ImageArray(
 \item{image}{a path to a file, a single array or a list of arrays
 containing the pixel intensities of an image.}
 
-\item{axes}{a character vector of axes names for images. 
-Should be a subset of c("c", "y", "x", "z", "t")}
+\item{axes}{a character vector of axis names, a subset of
+\code{c("c", "y", "x", "z", "t")}, of the same length as the number of
+dimensions of every level}
 
 \item{n.levels}{the number of levels of the pyramidal image,
 typical an integer starting from 1. Will be ignored if \code{scales} is 

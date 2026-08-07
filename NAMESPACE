@@ -59,7 +59,10 @@ importFrom(S4Vectors,
   coolcat,
   new2
 )
-importFrom(ZarrArray,writeZarrArray)
+importFrom(ZarrArray,
+  ZarrArray,
+  writeZarrArray
+)
 importFrom(grDevices,
   as.raster,
   rgb
