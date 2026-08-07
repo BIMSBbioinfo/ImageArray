@@ -203,17 +203,145 @@ setMethod("scales", "ImageArray", function(object) object@scales)
 # Create/Write ####
 ####
 
+#' ImageArray
+#'
+#' creates an object of ImageArray class
+#'
+#' @param image a path to a file, a single array or a list of arrays
+#'  containing the pixel intensities of an image.
+#' @eval paste0("@param axes a character vector of axes names for images. 
+#'  Should be a subset of ", deparse(.AXES))
+#' @param n.levels the number of levels of the pyramidal image,
+#'  typical an integer starting from 1. Will be ignored if \code{scales} is 
+#'  provided
+#' @param max.pixel.threshold the maximum width
+#'  and height pixel dimension that the lowest level of the image pyramid
+#'  should have, thus the image will be downscaled two folds until both width
+#'  and height is below the threshold. Default is 700 pixels.
+#'  Will be ignored if \code{n.levels} is provided
+#' @param axes a character vector of axis names, a subset of
+#'   \code{c("c", "y", "x", "z", "t")}, of the same length as the number of
+#'   dimensions of every level
+#' @param scales a list of named numeric vectors where names are a  
+#'  subset of \code{axes} and values are associated with scales 
+#'  of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
+#'  information. When provided, \code{axes}, \code{n.levels} and 
+#'  \code{max.pixel.threshold} will be overridden.  
+#' @param engine the package to use for each image layer: either
+#'  \code{EBImage} or \code{magick-image}
+#' @param series the series IDs of the pyramidal image,
+#'  typical an integer starting from 1.
+#' @param resolution the resolution IDs of the pyramidal image,
+#'  typical an integer starting from 1.
+#' @param verbose verbose
+#'
+#' @name ImageArray
+#' @rdname ImageArray
+#' 
+#' @aliases 
+#' createImageArray
+#' createImageArray,ImageArray-method
+#' 
+#' @importFrom methods new
+#' @importFrom DelayedArray DelayedArray
+#'
+#' @export
+#' @return An ImageArray object
+#'
+#' @examples
+#' # get image
+#' library(EBImage)
+#' img.file <- system.file("images", "sample.png", package="EBImage")
+#'
+#' # create ImageArray
+#' imgarray <- ImageArray(img.file, n.levels = 3)
+#' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
+#' plot(imgarray_raster)
+ImageArray <- function(
+    image,
+    axes = NULL, 
+    n.levels = NULL,
+    max.pixel.threshold = 700,
+    scales = NULL,
+    engine = "EBImage",
+    series = NULL,
+    resolution = NULL,
+    verbose = FALSE
+) {
+  
+  # overwrite axes if scales are given
+  if(!is.null(scales))
+    axes <- .get_axes_from_scales(scales)
+  
+  # create ImageArray from file path
+  if (inherits(image, "character")) {
+    if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
+      image <- BFPath(image, series, resolution)
+    } else if (grepl(".ome.zarr", image)) {
+      image <- OZPath(image, resolution)
+    } else {
+      image <- read_image(image, engine = engine)
+    }
+    # read arrays as magick or EBImage
+  } else if(is.array(image)){
+    axes <- .check_axes(image, axes = axes, engine = engine)
+    image <- read_image(image, axes = axes, engine = engine)
+  } 
+  
+  # read image list
+  image <- createImageList(
+    image,
+    axes = axes,
+    scales = scales,
+    n.levels = n.levels,
+    max.pixel.threshold = max.pixel.threshold,
+    verbose = verbose
+  )
+  
+  # save levels as SimpleList
+  image$levels <- S4Vectors:::new_SimpleList_from_list("ImageList", 
+                                                       image$levels)
+  
+  # get scales from list if not provided
+  if(is.null(scales))
+    scales <- .get_scales_from_levels(image$levels, image$axes)
+  
+  # create class
+  S4Vectors::new2(
+    "ImageArray", 
+    levels = image$levels,
+    axes = image$axes,
+    scales = scales
+  )
+}
+
+#' @describeIn ImageArray deprecated function
+#' @export
+createImageArray <- function(
+    image,
+    n.levels = NULL,
+    series = NULL,
+    resolution = NULL,
+    max.pixel.threshold = max.pixel.threshold,
+    engine = "EBImage",
+    verbose = FALSE
+) {
+  warning("'createImageArray' function is deprecated. ", 
+          "Please use 'ImageArray' instead!")
+  ImageArray(image,
+             n.levels = NULL,
+             max.pixel.threshold = max.pixel.threshold,
+             engine = "EBImage",
+             series = NULL,
+             resolution = NULL,
+             verbose = FALSE)
+}
+
 #' createListFromBFPath
 #'
 #' creates an object of BFArray class
 #'
-#' @param image a BFPath object
-#' @param series the number of series if the image supposed to be
-#' pyramidal, or the the series IDs of the pyramidal image,
-#' typical an integer starting from 1
-#' @param resolution the resolution IDs of the pyramidal
-#' image, typical an integer starting from 1
-#' @param verbose verbose
+#' @inheritParams ImageArray
 #'
 #' @noRd
 createListFromBFPath <- function(
@@ -234,19 +362,41 @@ createListFromBFPath <- function(
          axes = tolower(axes(image_list[[1]]))))
 }
 
+#' createListFromOZPath
+#'
+#' creates an object from OZPath object
+#'
+#' @inheritParams ImageArray
+#' 
+#' @importFrom ZarrArray ZarrArray
+#'
+#' @noRd
+createListFromOZPath <- function(
+    image,
+    axes = NULL,
+    scales = NULL,
+    n.levels = NULL,
+    max.pixel.threshold,
+    verbose = FALSE
+) {
+  # make list
+  image_list <- lapply(resolution(image), function(res) {
+    ZarrArray::ZarrArray(file.path(path(image), res))
+  })
+  
+  # axes
+  axes <- .check_axes(image_list[[1]], axes = axes)
+  
+  # return
+  return(list(levels = image_list, 
+              axes = axes))
+}
+
 #' createListFromMagick
 #'
 #' creates an object of ImageArray class from magick image
 #'
-#' @param image the image
-#' @param n.levels the number of levels of the pyramidal image,
-#' typical an integer starting from 1
-#' @param max.pixel.threshold the maximum width
-#' and height pixel dimension that the lowest level of the image pyramid
-#' should have, thus the image will be downscaled two folds until both width
-#' and height is below the threshold. Default is 700 pixels.
-#' If \code{n.levels} is provided, this parameter will be ignored.
-#' @param verbose verbose
+#' @inheritParams ImageArray
 #'
 #' @importFrom magick image_read
 #' @importFrom magick image_info
@@ -320,15 +470,7 @@ createListFromMagick <- function(
 #'
 #' creates an object of ImageArray class from magick image
 #'
-#' @param image the image
-#' @param n.levels the number of levels of the pyramidal image,
-#' typical an integer starting from 1
-#' @param max.pixel.threshold the maximum width
-#' and height pixel dimension that the lowest level of the image pyramid
-#' should have, thus the image will be downscaled two folds until both width
-#' and height is below the threshold. Default is 700 pixels.
-#' If \code{n.levels} is provided, this parameter will be ignored.
-#' @param verbose verbose
+#' @inheritParams ImageArray
 #'
 #' @importFrom EBImage readImage
 #' @importFrom EBImage resize
@@ -382,6 +524,13 @@ createListFromEBImage <- function(
   return(list(levels = image_list, axes = axes))
 }
 
+#' createListFromList
+#'
+#' creates an object of ImageArray class from a list of arrays
+#'
+#' @inheritParams ImageArray
+#'
+#' @noRd
 createListFromList <- function(image,
                                axes = NULL,
                                scales = NULL,
@@ -412,7 +561,10 @@ createListFromList <- function(image,
 }
 
 #' @noRd
-setMethod("createImageList", "magick_class", createListFromMagick)
+setMethod("createImageList", "bitmap", createListFromMagick)
+
+#' @noRd
+setMethod("createImageList", "magick-image", createListFromMagick)
 
 #' @noRd
 setMethod("createImageList", "Image", createListFromEBImage)
@@ -421,137 +573,10 @@ setMethod("createImageList", "Image", createListFromEBImage)
 setMethod("createImageList", "BFPath", createListFromBFPath)
 
 #' @noRd
+setMethod("createImageList", "OZPath", createListFromOZPath)
+
+#' @noRd
 setMethod("createImageList", "list", createListFromList)
-
-#' ImageArray
-#'
-#' creates an object of ImageArray class
-#'
-#' @param image a path to a file, a single array or a list of arrays
-#'  containing the pixel intensities of an image.
-#' @eval paste0("@param axes a character vector of axes names for images. 
-#'  Should be a subset of ", deparse(.AXES))
-#' @param n.levels the number of levels of the pyramidal image,
-#'  typical an integer starting from 1. Will be ignored if \code{scales} is 
-#'  provided
-#' @param max.pixel.threshold the maximum width
-#'  and height pixel dimension that the lowest level of the image pyramid
-#'  should have, thus the image will be downscaled two folds until both width
-#'  and height is below the threshold. Default is 700 pixels.
-#'  Will be ignored if \code{n.levels} is provided
-#' @param scales a list of named numeric vectors where names are a  
-#'  subset of \code{axes} and values are associated with scales 
-#'  of these axes. See \url{https://ngff.openmicroscopy.org/} for more 
-#'  information. When provided, \code{axes}, \code{n.levels} and 
-#'  \code{max.pixel.threshold} will be overridden.  
-#' @param engine the package to use for each image layer: either
-#'  \code{EBImage} or \code{magick-image}
-#' @param series the series IDs of the pyramidal image,
-#'  typical an integer starting from 1.
-#' @param resolution the resolution IDs of the pyramidal image,
-#'  typical an integer starting from 1.
-#' @param verbose verbose
-#'
-#' @name ImageArray
-#' @rdname ImageArray
-#' 
-#' @aliases 
-#' createImageArray
-#' createImageArray,ImageArray-method
-#' 
-#' @importFrom methods new
-#' @importFrom DelayedArray DelayedArray
-#'
-#' @export
-#' @return An ImageArray object
-#'
-#' @examples
-#' # get image
-#' library(EBImage)
-#' img.file <- system.file("images", "sample.png", package="EBImage")
-#'
-#' # create ImageArray
-#' imgarray <- ImageArray(img.file, n.levels = 3)
-#' imgarray_raster <- as.raster(imgarray, max.pixel.size = 300)
-#' plot(imgarray_raster)
-ImageArray <- function(
-    image,
-    axes = NULL, 
-    n.levels = NULL,
-    max.pixel.threshold = 700,
-    scales = NULL,
-    engine = "EBImage",
-    series = NULL,
-    resolution = NULL,
-    verbose = FALSE
-) {
-  
-  # overwrite axes if scales are given
-  if(!is.null(scales))
-    axes <- .get_axes_from_scales(scales)
-  
-  # create ImageArray from file path
-  if (inherits(image, "character")) {
-    if (grepl(".ome.tiff$|.ome.tif$|.qptiff$|.qptif$", image)) {
-      image <- BFPath(image, series, resolution)
-    } else {
-      image <- read_image(image, engine = engine)
-    }
-    
-  # read arrays as magick or EBImage
-  } else if(is.array(image)){
-    axes <- .check_axes(image, axes = axes, engine = engine)
-    image <- read_image(image, axes = axes, engine = engine)
-  } 
-  
-  # read image list
-  image <- createImageList(
-    image,
-    axes = axes,
-    scales = scales,
-    n.levels = n.levels,
-    max.pixel.threshold = max.pixel.threshold,
-    verbose = verbose
-  )
-  
-  # construct ImageArray object
-  image$levels <- S4Vectors:::new_SimpleList_from_list("ImageList", 
-                                                       image$levels)
-  
-  # get scales from list if not provided
-  if(is.null(scales))
-    scales <- .get_scales_from_levels(image$levels, image$axes)
-  
-  # create class
-  S4Vectors::new2(
-    "ImageArray", 
-    levels = image$levels,
-    axes = image$axes,
-    scales = scales
-  )
-}
-
-#' @describeIn ImageArray deprecated function
-#' @export
-createImageArray <- function(
-    image,
-    n.levels = NULL,
-    series = NULL,
-    resolution = NULL,
-    max.pixel.threshold = max.pixel.threshold,
-    engine = "EBImage",
-    verbose = FALSE
-) {
-  warning("'createImageArray' function is deprecated. ", 
-          "Please use 'ImageArray' instead!")
-  ImageArray(image,
-             n.levels = NULL,
-             max.pixel.threshold = max.pixel.threshold,
-             engine = "EBImage",
-             series = NULL,
-             resolution = NULL,
-             verbose = FALSE)
-}
 
 #' writeImageArray
 #'

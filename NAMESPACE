@@ -4,6 +4,7 @@ S3method(as.raster,ImageArray)
 export(BFArray)
 export(BFPath)
 export(ImageArray)
+export(OZPath)
 export(createImageArray)
 export(getImageInfo)
 export(writeImageArray)
@@ -48,14 +49,20 @@ importFrom(EBImage,
   rotate
 )
 importFrom(HDF5Array,writeHDF5Array)
-importFrom(Rarr,write_zarr_group)
+importFrom(Rarr,
+  write_zarr_group,
+  zarr_overview
+)
 importFrom(S4Arrays,as.array.Array)
 importFrom(S4Vectors,
   SimpleList,
   coolcat,
   new2
 )
-importFrom(ZarrArray,writeZarrArray)
+importFrom(ZarrArray,
+  ZarrArray,
+  writeZarrArray
+)
 importFrom(grDevices,
   as.raster,
   rgb
