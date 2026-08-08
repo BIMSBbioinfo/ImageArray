@@ -47,6 +47,8 @@
 #' axes<-,ImageArray-method
 #' scales
 #' scales,ImageArray-method
+#' scales<-
+#' scales<-,ImageArray-method
 #' realize
 #' realize,ImageArray-method
 #' as.raster
@@ -185,19 +187,51 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 
 #' @describeIn ImageArray-methods get axes metadata of the ImageArray object
 #' @exportMethod axes
-setMethod("axes", "ImageArray", function(object) object@axes)
+setMethod("axes", "ImageArray", function(object)
+  .get_axes_from_scales(scales(object)))
 
-#' @describeIn ImageArray-methods get axes metadata of the ImageArray object
+#' @describeIn ImageArray-methods replace axes metadata of the ImageArray
+#' object, the replacement can only be a permutation of the existing axes
 #' @exportMethod axes<-
-setMethod("axes<-", "ImageArray", function(object, ..., value){
-  value <- .check_axes(object[[1]], axes = value)
-  object@axes <- value
+setReplaceMethod("axes", "ImageArray", function(object, ..., value){
+  ax <- axes(object)
+  
+  # check axes, should be a permutation
+  if(!is.character(value) || length(value) != length(ax) ||
+     anyDuplicated(value) || !setequal(value, ax))
+    stop("axes can only be replaced by a permutation of the existing axes: ",
+         paste(ax, collapse = ","), "!")
+
+  # update axes
+  scales(object) <- lapply(scales(object), \(.) .[value])
   object
 })
 
 #' @describeIn ImageArray-methods get scales metadata of the ImageArray object
 #' @exportMethod scales
 setMethod("scales", "ImageArray", function(object) object@scales)
+
+#' @describeIn ImageArray-methods replace scales metadata of the ImageArray
+#' object, each vector should be named by a permutation of the existing axes
+#' @importFrom methods validObject
+#' @exportMethod scales<-
+setReplaceMethod("scales", "ImageArray", function(object, ..., value) {
+  if(!is.list(value)) stop("scales must be a list!")
+
+  # the axes of an ImageArray object can only be permuted, all remaining
+  # checks are done by the validity of the class below
+  ax <- axes(object)
+  for(s in value){
+    if(is.null(names(s)) || length(s) != length(ax) ||
+       anyDuplicated(names(s)) || !setequal(names(s), ax))
+      stop("names of each vector in scales should be a permutation of ",
+           "the existing axes: ", paste(ax, collapse = ","), "!")
+  }
+
+  object@scales <- value
+  methods::validObject(object)
+  object
+})
 
 ####
 # Create/Write ####
@@ -528,7 +562,6 @@ ImageArray <- function(
   S4Vectors::new2(
     "ImageArray", 
     levels = image$levels,
-    axes = image$axes,
     scales = scales
   )
 }

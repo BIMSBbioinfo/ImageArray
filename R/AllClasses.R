@@ -22,17 +22,16 @@ setClassUnion("matrix_array_Array",
 #'
 #' @description
 #' An S4 container for a multi-resolution (pyramidal) image, holding the
-#' pyramid levels together with their axis names and scales. Objects are
-#' created with \code{\link{ImageArray}}.
+#' pyramid levels together with their scales. Objects are created with
+#' \code{\link{ImageArray}}.
 #'
 #' @slot levels an \code{ImageList} of pyramid levels, ordered from the
 #'   highest to the lowest resolution
-#' @slot axes a character vector of axis names, a subset of
-#'   \code{c("c", "y", "x", "z", "t")}, of the same length as the number of
-#'   dimensions of every level
-#' @slot scales a list of named numeric vectors, one per level, where names
-#'   are a subset of \code{axes} and values are the scales of these axes. See
-#'   \url{https://ngff.openmicroscopy.org/} for more information. 
+#' @slot scales a list of named numeric vectors, one per level, where values
+#'   are the scales of these axes. The names of these vectors define the axes
+#'   of the object, hence they are a subset of \code{c("c", "y", "x", "z", "t")}
+#'   and are shared, in the same order, by all levels. See
+#'   \url{https://ngff.openmicroscopy.org/} for more information.
 #'
 #' @keywords internal
 #' @exportClass ImageArray
@@ -40,7 +39,6 @@ setClassUnion("matrix_array_Array",
   Class = "ImageArray",
   slots = c(
     levels = "ImageList",
-    axes = "character",
     scales = "list"
   )
 )
