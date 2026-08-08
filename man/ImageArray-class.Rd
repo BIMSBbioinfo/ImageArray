@@ -23,4 +23,3 @@ and are shared, in the same order, by all levels. See
 \url{https://ngff.openmicroscopy.org/} for more information.}
 }}
 
-\keyword{internal}

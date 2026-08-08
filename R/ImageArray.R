@@ -192,7 +192,6 @@ setMethod("axes", "ImageArray", function(object)
 
 #' @describeIn ImageArray-methods replace axes metadata of the ImageArray
 #' object, the replacement can only be a permutation of the existing axes
-#' @exportMethod axes<-
 setReplaceMethod("axes", "ImageArray", function(object, ..., value){
   ax <- axes(object)
   
@@ -208,7 +207,6 @@ setReplaceMethod("axes", "ImageArray", function(object, ..., value){
 })
 
 #' @describeIn ImageArray-methods get scales metadata of the ImageArray object
-#' @exportMethod scales
 setMethod("scales", "ImageArray", function(object) object@scales)
 
 #' @describeIn ImageArray-methods replace scales metadata of the ImageArray

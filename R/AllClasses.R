@@ -31,7 +31,6 @@ setClassUnion("matrix_array_Array",
 #'   and are shared, in the same order, by all levels. See
 #'   \url{https://ngff.openmicroscopy.org/} for more information.
 #'
-#' @keywords internal
 #' @exportClass ImageArray
 .ImageArray <- setClass(
   Class = "ImageArray",
