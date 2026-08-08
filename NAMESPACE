@@ -13,6 +13,7 @@ exportMethods("[[")
 exportMethods("[[<-")
 exportMethods("axes<-")
 exportMethods("path<-")
+exportMethods("scales<-")
 exportMethods(affine)
 exportMethods(aperm)
 exportMethods(axes)
@@ -76,7 +77,8 @@ importFrom(methods,
   setClassUnion,
   setOldClass,
   slot,
-  slotNames
+  slotNames,
+  validObject
 )
 importFrom(rhdf5,
   h5createFile,

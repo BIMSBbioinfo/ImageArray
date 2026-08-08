@@ -19,6 +19,8 @@
 \alias{axes<-,ImageArray-method}
 \alias{scales}
 \alias{scales,ImageArray-method}
+\alias{scales<-}
+\alias{scales<-,ImageArray-method}
 \alias{realize}
 \alias{realize,ImageArray-method}
 \alias{as.raster}
@@ -53,6 +55,8 @@
 \S4method{axes}{ImageArray}(object, ...) <- value
 
 \S4method{scales}{ImageArray}(object)
+
+\S4method{scales}{ImageArray}(object, ...) <- value
 
 \S4method{realize}{ImageArray}(x, level = NULL, max.pixel.size = NULL, min.pixel.size = NULL)
 
@@ -131,9 +135,13 @@ for \code{ImageArray} objects
 
 \item \code{axes(ImageArray)}: get axes metadata of the ImageArray object
 
-\item \code{axes(ImageArray) <- value}: get axes metadata of the ImageArray object
+\item \code{axes(ImageArray) <- value}: replace axes metadata of the ImageArray
+object, the replacement can only be a permutation of the existing axes
 
 \item \code{scales(ImageArray)}: get scales metadata of the ImageArray object
+
+\item \code{scales(ImageArray) <- value}: replace scales metadata of the ImageArray
+object, each vector should be named by a permutation of the existing axes
 
 \item \code{realize(ImageArray)}: realize the array
 

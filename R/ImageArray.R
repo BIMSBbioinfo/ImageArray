@@ -486,8 +486,8 @@ setMethod("createImageList", "list", createListFromList)
 #'  typical an integer starting from 1.
 #' @param verbose verbose
 #'
-#' @name ImageArray
-#' @rdname ImageArray
+#' @name ImageArray-constructor
+#' @rdname ImageArray-constructor
 #' 
 #' @aliases 
 #' createImageArray
@@ -566,7 +566,7 @@ ImageArray <- function(
   )
 }
 
-#' @describeIn ImageArray deprecated function
+#' @describeIn ImageArray-constructor deprecated function
 #' @export
 createImageArray <- function(
     image,
