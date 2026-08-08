@@ -76,7 +76,7 @@ test_that("duplicate axes", {
 test_that("get axes from scales", {
   
   scales <- list(c(x = 1, y = 1),
-                 c(x = 0.6, y = 0.6))
+                 c(x = 1.33, y = 1.33))
   axes <- .get_axes_from_scales(scales)
   expect_equal(axes, c("x", "y"))
   
@@ -123,7 +123,7 @@ test_that("replace axes of an ImageArray", {
     expect_equal(names(s), c("y", "x", "c"))
 
   # the scales follow their axes
-  expect_equal(scales(imgarray)[[2]], c(y = 0.4, x = 0.4, c = 1))
+  expect_equal(scales(imgarray)[[2]], c(y = 2.5, x = 2.5, c = 1))
 
   # the object remains valid
   expect_true(validObject(imgarray))

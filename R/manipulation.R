@@ -74,8 +74,8 @@ setMethod("crop", signature = "ImageArray", function(object, index) {
       lapply(seq_along(index[scaled_axes]), function(j) {
         ind <- index[scaled_axes][[j]]
         ind <- c(
-          floor(ind[1] * cur_scale[scaled_axes][j]),
-          ceiling(ind[length(ind)] * cur_scale[scaled_axes][j])
+          floor(ind[1] / cur_scale[scaled_axes][j]),
+          ceiling(ind[length(ind)] / cur_scale[scaled_axes][j])
         )
         seq(max(ind[1], 1), min(ind[2], selected_dim[j]))
       })

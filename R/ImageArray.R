@@ -403,8 +403,8 @@ createListFromEBImage <- function(
       if (verbose) .img_create_msg(dim_image, i)
       cur_image <- EBImage::resize(
         cur_image,
-        w = dim_image["x"]*scales[[i]]["x"],
-        h = dim_image["y"]*scales[[i]]["y"]
+        w = dim_image["x"]/scales[[i]]["x"],
+        h = dim_image["y"]/scales[[i]]["y"]
       )
       cur_img <- aperm(cur_image, perm = img_perm_backward)
       image_list[[i]] <-
@@ -446,7 +446,10 @@ createListFromList <- function(image,
 }
 
 #' @noRd
-setMethod("createImageList", "magick_class", createListFromMagick)
+setMethod("createImageList", "magick-image", createListFromMagick)
+
+#' @noRd
+setMethod("createImageList", "bitmap", createListFromMagick)
 
 #' @noRd
 setMethod("createImageList", "Image", createListFromEBImage)
@@ -865,7 +868,7 @@ setMethod("read_image",
 #' @keywords internal
 #' @noRd
 .magick_resize_scale <- function(dim_img, scales){
-  paste0(paste(round(dim_img*scales[c("x", "y")]), collapse = "x"),"!")
+  paste0(paste(round(dim_img/scales[c("x", "y")]), collapse = "x"),"!")
 }
 
 
@@ -882,7 +885,7 @@ setMethod("read_image",
     if(length(d) != length(axes)) stop(msg)
     d <- setNames(d, axes)
     sc <- .TEMPLATE_SCALES[axes]
-    sc[scaled_axes] <- d[scaled_axes]/first_dim[scaled_axes]
+    sc[scaled_axes] <- first_dim[scaled_axes]/d[scaled_axes]
     sc
   })
 }
@@ -894,7 +897,7 @@ setMethod("read_image",
     stop("axes should have at least x and y dimensions!")
   lapply(seq_len(n.levels), \(i){
     ax <- .TEMPLATE_SCALES[axes]
-    ax[c("x", "y")] <- ax[c("x", "y")] / 2^(i-1)
+    ax[c("x", "y")] <- ax[c("x", "y")] * 2^(i-1)
     ax
   })
 }

@@ -70,7 +70,7 @@ for(ni in names(img_list)) {
     od[xy] <- output.dim
     expect_equal(dim(imgarray_scale), od)
     for(i in seq_along(imgarray)){
-      od[xy] <- od[xy] / 2^(i-1)
+      od[xy] <- od[xy] * 2^(i-1)
       expect_equal(dim(imgarray_scale[[i]]), od)
     }
     

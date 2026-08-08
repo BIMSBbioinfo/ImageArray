@@ -70,7 +70,7 @@ test_that("array downscaled with EBImage and scales", {
   
   imgarray <- ImageArray(img3d, 
                          scales = list(c(x = 1, y = 1, c = 1),
-                                       c(x = 0.66, y = 0.2, c = 1)))
+                                       c(x = 1.5, y = 5, c = 1)))
   expect_equal(dim(imgarray[[2]]), c(13, 10, 3))
 })
 
@@ -78,7 +78,7 @@ test_that("array downscaled with magick and scales", {
   
   imgarray <- ImageArray(img3d, 
                          scales = list(c(x = 1, y = 1, c = 1),
-                                       c(x = 0.66, y = 0.2, c = 1)), 
+                                       c(x = 1.5, y = 5, c = 1)), 
                          engine = "magick-image")
   expect_equal(dim(imgarray[[2]]), c(13, 10, 3))
 })

@@ -6,8 +6,6 @@ NULL
 # magick classes
 setOldClass("magick-image")
 setOldClass("bitmap")
-setClassUnion(c("magick_class"), 
-              c("magick-image", "bitmap"))
 
 # array and matrix classes
 setClassUnion("matrix_array_Array", 
