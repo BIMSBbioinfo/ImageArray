@@ -3,7 +3,6 @@
   # check scales vs levels, this is done first since the axes are
   # given by the names of the scales
   sc <- scales(object)
-  if (!is.list(sc)) stop("scales must be a list!")
   if(length(sc) != length(object@levels))
     stop("scales should be of the same length as levels!")
 
