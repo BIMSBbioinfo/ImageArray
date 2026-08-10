@@ -7,11 +7,12 @@ export(ImageArray)
 export(createImageArray)
 export(getImageInfo)
 export(writeImageArray)
+exportClasses(ImageArray)
 exportMethods("[")
 exportMethods("[[")
 exportMethods("[[<-")
-exportMethods("axes<-")
 exportMethods("path<-")
+exportMethods("scales<-")
 exportMethods(affine)
 exportMethods(aperm)
 exportMethods(axes)
@@ -29,7 +30,6 @@ exportMethods(realize)
 exportMethods(resolution)
 exportMethods(rotate)
 exportMethods(scale)
-exportMethods(scales)
 exportMethods(series)
 exportMethods(translation)
 exportMethods(type)
@@ -75,7 +75,8 @@ importFrom(methods,
   setClassUnion,
   setOldClass,
   slot,
-  slotNames
+  slotNames,
+  validObject
 )
 importFrom(rhdf5,
   h5createFile,

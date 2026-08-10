@@ -6,6 +6,8 @@ NULL
 setGeneric("createImageList", 
            function(image, ...) standardGeneric("createImageList"))
 setGeneric("scales", function(object, ...) standardGeneric("scales"))
+setGeneric("scales<-", 
+           function(object, ..., value) standardGeneric("scales<-"))
 setGeneric("axes", function(object, ...) standardGeneric("axes"))
 setGeneric("axes<-", function(object, ..., value) standardGeneric("axes<-"))
 setGeneric("read_image", 

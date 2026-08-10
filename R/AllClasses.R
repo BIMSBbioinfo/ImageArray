@@ -6,8 +6,6 @@ NULL
 # magick classes
 setOldClass("magick-image")
 setOldClass("bitmap")
-setClassUnion(c("magick_class"), 
-              c("magick-image", "bitmap"))
 
 # array and matrix classes
 setClassUnion("matrix_array_Array", 
@@ -18,11 +16,26 @@ setClassUnion("matrix_array_Array",
   contains="SimpleList",
   prototype=prototype(elementType="matrix_array_Array"))
 
+#' @title ImageArray class
+#'
+#' @description
+#' An S4 container for a multi-resolution (pyramidal) image, holding the
+#' pyramid levels together with their scales. Objects are created with
+#' \code{\link{ImageArray}}.
+#'
+#' @slot levels an \code{ImageList} of pyramid levels, ordered from the
+#'   highest to the lowest resolution
+#' @slot scales a list of named numeric vectors, one per level, where values
+#'   are the scales of these axes. The names of these vectors define the axes
+#'   of the object, hence they are a subset of \code{c("c", "y", "x", "z", "t")}
+#'   and are shared, in the same order, by all levels. See
+#'   \url{https://ngff.openmicroscopy.org/} for more information.
+#'
+#' @exportClass ImageArray
 .ImageArray <- setClass(
   Class = "ImageArray",
   slots = c(
     levels = "ImageList",
-    axes = "character",
     scales = "list"
   )
 )

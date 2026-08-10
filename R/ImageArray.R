@@ -47,6 +47,8 @@
 #' axes<-,ImageArray-method
 #' scales
 #' scales,ImageArray-method
+#' scales<-
+#' scales<-,ImageArray-method
 #' realize
 #' realize,ImageArray-method
 #' as.raster
@@ -185,19 +187,49 @@ setMethod("length", signature = "ImageArray", function(x) length(x@levels))
 
 #' @describeIn ImageArray-methods get axes metadata of the ImageArray object
 #' @exportMethod axes
-setMethod("axes", "ImageArray", function(object) object@axes)
+setMethod("axes", "ImageArray", function(object)
+  .get_axes_from_scales(scales(object)))
 
-#' @describeIn ImageArray-methods get axes metadata of the ImageArray object
-#' @exportMethod axes<-
-setMethod("axes<-", "ImageArray", function(object, ..., value){
-  value <- .check_axes(object[[1]], axes = value)
-  object@axes <- value
+#' @describeIn ImageArray-methods replace axes metadata of the ImageArray
+#' object, the replacement can only be a permutation of the existing axes
+setReplaceMethod("axes", "ImageArray", function(object, ..., value){
+  ax <- axes(object)
+  
+  # check axes, should be a permutation
+  if(!is.character(value) || length(value) != length(ax) ||
+     anyDuplicated(value) || !setequal(value, ax))
+    stop("axes can only be replaced by a permutation of the existing axes: ",
+         paste(ax, collapse = ","), "!")
+
+  # update axes
+  scales(object) <- lapply(scales(object), \(.) .[value])
   object
 })
 
 #' @describeIn ImageArray-methods get scales metadata of the ImageArray object
-#' @exportMethod scales
 setMethod("scales", "ImageArray", function(object) object@scales)
+
+#' @describeIn ImageArray-methods replace scales metadata of the ImageArray
+#' object, each vector should be named by a permutation of the existing axes
+#' @importFrom methods validObject
+#' @exportMethod scales<-
+setReplaceMethod("scales", "ImageArray", function(object, ..., value) {
+  if(!is.list(value)) stop("scales must be a list!")
+
+  # the axes of an ImageArray object can only be permuted, all remaining
+  # checks are done by the validity of the class below
+  ax <- axes(object)
+  for(s in value){
+    if(is.null(names(s)) || length(s) != length(ax) ||
+       anyDuplicated(names(s)) || !setequal(names(s), ax))
+      stop("names of each vector in scales should be a permutation of ",
+           "the existing axes: ", paste(ax, collapse = ","), "!")
+  }
+
+  object@scales <- value
+  methods::validObject(object)
+  object
+})
 
 ####
 # Create/Write ####
@@ -369,8 +401,8 @@ createListFromEBImage <- function(
       if (verbose) .img_create_msg(dim_image, i)
       cur_image <- EBImage::resize(
         cur_image,
-        w = dim_image["x"]*scales[[i]]["x"],
-        h = dim_image["y"]*scales[[i]]["y"]
+        w = dim_image["x"]/scales[[i]]["x"],
+        h = dim_image["y"]/scales[[i]]["y"]
       )
       cur_img <- aperm(cur_image, perm = img_perm_backward)
       image_list[[i]] <-
@@ -412,7 +444,10 @@ createListFromList <- function(image,
 }
 
 #' @noRd
-setMethod("createImageList", "magick_class", createListFromMagick)
+setMethod("createImageList", "magick-image", createListFromMagick)
+
+#' @noRd
+setMethod("createImageList", "bitmap", createListFromMagick)
 
 #' @noRd
 setMethod("createImageList", "Image", createListFromEBImage)
@@ -452,8 +487,8 @@ setMethod("createImageList", "list", createListFromList)
 #'  typical an integer starting from 1.
 #' @param verbose verbose
 #'
-#' @name ImageArray
-#' @rdname ImageArray
+#' @name ImageArray-constructor
+#' @rdname ImageArray-constructor
 #' 
 #' @aliases 
 #' createImageArray
@@ -528,12 +563,11 @@ ImageArray <- function(
   S4Vectors::new2(
     "ImageArray", 
     levels = image$levels,
-    axes = image$axes,
     scales = scales
   )
 }
 
-#' @describeIn ImageArray deprecated function
+#' @describeIn ImageArray-constructor deprecated function
 #' @export
 createImageArray <- function(
     image,
@@ -832,7 +866,7 @@ setMethod("read_image",
 #' @keywords internal
 #' @noRd
 .magick_resize_scale <- function(dim_img, scales){
-  paste0(paste(round(dim_img*scales[c("x", "y")]), collapse = "x"),"!")
+  paste0(paste(round(dim_img/scales[c("x", "y")]), collapse = "x"),"!")
 }
 
 
@@ -849,7 +883,7 @@ setMethod("read_image",
     if(length(d) != length(axes)) stop(msg)
     d <- setNames(d, axes)
     sc <- .TEMPLATE_SCALES[axes]
-    sc[scaled_axes] <- d[scaled_axes]/first_dim[scaled_axes]
+    sc[scaled_axes] <- first_dim[scaled_axes]/d[scaled_axes]
     sc
   })
 }
@@ -861,7 +895,7 @@ setMethod("read_image",
     stop("axes should have at least x and y dimensions!")
   lapply(seq_len(n.levels), \(i){
     ax <- .TEMPLATE_SCALES[axes]
-    ax[c("x", "y")] <- ax[c("x", "y")] / 2^(i-1)
+    ax[c("x", "y")] <- ax[c("x", "y")] * 2^(i-1)
     ax
   })
 }
