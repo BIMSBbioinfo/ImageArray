@@ -1,3 +1,14 @@
+# ImageArray 1.1.7
+
+## New features
+
+* Compatibility with https://github.com/Huber-group-EMBL/romeo
+* `ImageArray` class is now exported.
+* `axes` slot is dropped from `ImageArray` class and now parsed from 
+  names(scales(object)[[1]]) (which can still be parsed from `axes(object)` 
+  as usual).
+* scales of pyramid axes are now inverted, e.g. 1, 0.5, 0.125 are now 1, 2, 4. 
+  
 # ImageArray 1.1.6
 
 ## New features
